@@ -1230,10 +1230,10 @@ MonoBehaviour:
   thisGamesChipsCount: 4
   chamberManager: {fileID: 846792090}
   proximityThreshold: 5
-  mouseArroundChambers: 0
-  chamberCloseToMouse: {fileID: 0}
+  mouseOverChambers: 0
+  closestChamber: {fileID: 0}
   chipsMovementSpeed: 0.5
-  chipsMovementGap: 10
+  chipsMovementGap: 7
   deposited: 0
   playersTurn: 0
 --- !u!1001 &670687024

@@ -13,8 +13,8 @@ public class PlayersChipsManager : MonoBehaviour
     public ChamberManager chamberManager;
     public float proximityThreshold = 1.0f; // Adjust this value as needed
 
-    public bool mouseArroundChambers;
-    public Chamber chamberCloseToMouse;
+    public bool mouseOverChambers;
+    public Chamber closestChamber;
 
     public float chipsMovementSpeed;
     public float chipsMovementGap;
@@ -58,7 +58,7 @@ public class PlayersChipsManager : MonoBehaviour
         if (!playersTurn) return;
         if (!CheckMouseProximity())
         {
-
+            closestChamber = null;
             for (int i = 0; i < thisGamesChips.Count; i++)
             {
                 Transform chip = thisGamesChips[i];
@@ -71,12 +71,11 @@ public class PlayersChipsManager : MonoBehaviour
             for (int i = 0; i < thisGamesChips.Count; i++)
             {
                 Transform chip = thisGamesChips[i];
-                if (mouseArroundChambers)
-                {
-                    targetPosition = chamberCloseToMouse.chipsHolderForChoosing.position + Vector3.up * 0.2f * (thisGamesChips.Count - i);
-                }
+
+                if(closestChamber) targetPosition = closestChamber.chipsHolderForChoosing.position + Vector3.up * 0.2f * (thisGamesChips.Count - i);
                 chip.position = Vector3.Lerp(chip.position, targetPosition, (thisGamesChips.Count - i + chipsMovementGap) * chipsMovementSpeed * Time.deltaTime);
             }
+           
         }
 
 

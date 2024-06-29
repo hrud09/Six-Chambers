@@ -29,15 +29,14 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseOver()
     {
-        if (!chamberManager.playerChipsManager.deposited && chamberManager.playerChipsManager.playersTurn)
+        if (!chamberManager.playerChipsManager.deposited && chamberManager.playerChipsManager.playersTurn && !chamberManager.playerChipsManager.mouseOverChambers)
         {
-            chamberManager.playerChipsManager.mouseArroundChambers = true;
-            chamberManager.playerChipsManager.chamberCloseToMouse = this;
-
+            chamberManager.playerChipsManager.mouseOverChambers = true;
+            chamberManager.playerChipsManager.closestChamber = this;
         }
     }
     private void OnMouseExit()
     {
-        chamberManager.playerChipsManager.mouseArroundChambers = false;
+        chamberManager.playerChipsManager.mouseOverChambers = false;
     }
 }

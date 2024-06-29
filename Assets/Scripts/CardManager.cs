@@ -4,6 +4,7 @@ using UnityEngine;
 using DG.Tweening;
 using System.Linq;
 using TMPro;
+
 public enum CardType
 {
     Clove,
@@ -12,7 +13,6 @@ public enum CardType
     Spade
 }
 
-
 [System.Serializable]
 public class CardInfo
 {
@@ -20,12 +20,14 @@ public class CardInfo
     public int cardNumber;
     public Sprite cardTexture;
 }
+
 [System.Serializable]
 public class SignWiseCard
 {
     public CardType CardType;
     public Sprite[] sprites;
 }
+
 public class CardManager : MonoBehaviour
 {
     public GameObject cardPrefab;
@@ -44,16 +46,19 @@ public class CardManager : MonoBehaviour
     public GameObject showCardButton;
 
     public TMP_Text winText;
+
     void Start()
     {
         foreach (var cardDeck in signWiseCards)
         {
             foreach (var cardSprite in cardDeck.sprites)
             {
-                CardInfo cardInfo = new CardInfo();
-                cardInfo.cardTexture = cardSprite;
-                cardInfo.CardType = cardDeck.CardType;
-                cardInfo.cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 1;
+                CardInfo cardInfo = new CardInfo
+                {
+                    cardTexture = cardSprite,
+                    CardType = cardDeck.CardType,
+                    cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 1
+                };
                 cardsInDeck.Add(cardInfo);
             }
         }
@@ -152,7 +157,6 @@ public class CardManager : MonoBehaviour
                 if (index == cardsOnHands.Count - 1)
                 {
                     CheckPokerLogics();
-
                 }
             });
         }
@@ -162,7 +166,9 @@ public class CardManager : MonoBehaviour
     {
         List<CardInfo> cardsOnBoard = boardManager.cards;
         Chamber winningChamber = null;
+        List<Chamber> winningChambers;
         int highestHandValue = -1;
+        List<Chamber> tiedChambers = new List<Chamber>();
 
         foreach (Transform t in chamberManager.chamberTransforms)
         {
@@ -174,11 +180,79 @@ public class CardManager : MonoBehaviour
             {
                 highestHandValue = handValue;
                 winningChamber = t.GetComponent<Chamber>();
+                tiedChambers.Clear();
+                tiedChambers.Add(winningChamber);
+            }
+            else if (handValue == highestHandValue)
+            {
+                tiedChambers.Add(t.GetComponent<Chamber>());
             }
         }
 
-        winText.text = winningChamber.index.ToString() + " Wins by " + winType(highestHandValue).ToString();
+        if (tiedChambers.Count == 1)
+        {
+            winText.text = winningChamber.index.ToString() + " Wins by " + winType(highestHandValue).ToString();
+        }
+        else
+        {
+            string tiedChambersIndices = string.Join(", ", tiedChambers.Select(chamber => chamber.index.ToString()).ToArray());
+            winningChambers = BreakTie(tiedChambers, highestHandValue);
+            if (winningChambers.Count == 1) winText.text = winningChambers[0].index.ToString() + " Wins by Tie-Breaker against Chambers: " + tiedChambersIndices + "\nWins by " + winType(highestHandValue).ToString();
+            else
+            {
+                string message = "";
+                foreach (var item in winningChambers)
+                {
+                    message += item.index.ToString() + ",";
+                }
+                message += " Wins by" + winType(highestHandValue).ToString();
+            }
+
+        }
+
     }
+    List<Chamber> BreakTie(List<Chamber> tiedChambers, int handValue)
+    {
+        List<Chamber> tiedWinners = new List<Chamber>();
+        tiedWinners.Add(tiedChambers[0]);
+
+        List<CardInfo> winningCards = new List<CardInfo>(boardManager.cards);
+        winningCards.AddRange(tiedWinners[0].chamberCards);
+        winningCards = winningCards.OrderByDescending(card => card.cardNumber).ToList();
+
+        foreach (var chamber in tiedChambers.Skip(1))
+        {
+            List<CardInfo> currentCards = new List<CardInfo>(boardManager.cards);
+            currentCards.AddRange(chamber.chamberCards);
+            currentCards = currentCards.OrderByDescending(card => card.cardNumber).ToList();
+
+            bool isTie = true;
+            for (int i = 0; i < winningCards.Count; i++)
+            {
+                if (winningCards[i].cardNumber > currentCards[i].cardNumber)
+                {
+                    isTie = false;
+                    break;
+                }
+                else if (winningCards[i].cardNumber < currentCards[i].cardNumber)
+                {
+                    tiedWinners.Clear();
+                    tiedWinners.Add(chamber);
+                    winningCards = currentCards;
+                    isTie = false;
+                    break;
+                }
+            }
+
+            if (isTie)
+            {
+                tiedWinners.Add(chamber);
+            }
+        }
+
+        return tiedWinners;
+    }
+
 
     int EvaluateHand(List<CardInfo> cards)
     {
@@ -187,27 +261,12 @@ public class CardManager : MonoBehaviour
 
         // Check for flush
         bool isFlush = cards.All(card => card.CardType == cards[0].CardType);
-        bool isRoyalFlash = true;
-
-        for (int i = 1; i < cards.Count; i++)
-        {
-            if (cards[i].cardNumber < 11 && cards[i].cardNumber != 1)
-            {
-                isRoyalFlash = false;
-                break;
-            }
-
-        }
+        bool isRoyalFlush = cards[0].cardNumber == 1 && cards[1].cardNumber == 10 && cards[2].cardNumber == 11 && cards[3].cardNumber == 12 && cards[4].cardNumber == 13;
 
         // Check for straight
         bool isStraight = true;
         for (int i = 1; i < cards.Count; i++)
         {
-            if (cards[i].CardType != cards[i - 1].CardType)
-            {
-                isStraight = false;
-                break;
-            }
             if (cards[i].cardNumber != cards[i - 1].cardNumber + 1)
             {
                 isStraight = false;
@@ -232,7 +291,7 @@ public class CardManager : MonoBehaviour
         bool isTwoPair = cardCounts.Values.Count(count => count == 2) == 2;
         bool isFullHouse = isThreeOfAKind && isPair;
 
-        if (isRoyalFlash)
+        if (isRoyalFlush)
             return 9;
         if (isFlush && isStraight)
             return 8;
@@ -259,7 +318,7 @@ public class CardManager : MonoBehaviour
         switch (strength)
         {
             case 0:
-                return WinType.HightCard;
+                return WinType.HighCard;
             case 1:
                 return WinType.Pair;
             case 2:
@@ -269,28 +328,31 @@ public class CardManager : MonoBehaviour
             case 4:
                 return WinType.Straight;
             case 5:
-                return WinType.FourOfAKind;
+                return WinType.Flush;
             case 6:
                 return WinType.FullHouse;
             case 7:
-                return WinType.Straight_Flash;
+                return WinType.FourOfAKind;
             case 8:
-                return WinType.Royal_Flash;
+                return WinType.StraightFlush;
+            case 9:
+                return WinType.RoyalFlush;
             default:
-                return WinType.HightCard;
-
+                return WinType.HighCard;
         }
     }
 }
+
 public enum WinType
 {
-    Royal_Flash,
-    Straight_Flash,
-    FullHouse,
+    RoyalFlush,
+    StraightFlush,
     FourOfAKind,
+    FullHouse,
+    Flush,
     Straight,
     ThreeOfAKind,
     TwoPair,
     Pair,
-    HightCard
+    HighCard
 }

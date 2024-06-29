@@ -80,28 +80,41 @@ public class CardManager : MonoBehaviour
     {
         foreach (var chamberTransform in chamberManager.chamberTransforms)
         {
+            Chamber chamber = chamberTransform.GetComponent<Chamber>();
             CardInfo cardInfo1 = DrawRandomCard();
             CardInfo cardInfo2 = DrawRandomCard();
 
-            chamberTransform.GetComponent<Chamber>().chamberCards.Add(cardInfo1);
-            chamberTransform.GetComponent<Chamber>().chamberCards.Add(cardInfo2);
+            chamber.chamberCards.Add(cardInfo1);
+            chamber.chamberCards.Add(cardInfo2);
 
             cardsInHands.Add(cardInfo1);
             cardsInHands.Add(cardInfo2);
 
-            GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.identity, chamberTransform);
-            GameObject card2 = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.identity, chamberTransform);
+            Vector3 targetDirection = (chamberTransform.parent.position - chamberTransform.position).normalized;
+            targetDirection.y = 0;
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+
+           
+
+            GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
+            GameObject card2 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
             cardsOnHands.Add(card1.transform);
             cardsOnHands.Add(card2.transform);
             card1.GetComponent<Card>().InitiateCard(cardInfo1);
             card2.GetComponent<Card>().InitiateCard(cardInfo2);
 
-            Vector3 pos1 = chamberTransform.position;
-            Vector3 pos2 = chamberTransform.position + Vector3.back * 1f + Vector3.up * 1f;
+            Vector3 pos1 = chamber.cardParent.position;
+            Vector3 pos2 = pos1 - chamberTransform.forward * 1f + Vector3.up * 0.2f;
 
-            card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 180));
+            if (chamberTransform.localPosition.x > 0) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 20, 180));
+            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
+
+
             card1.transform.DOMove(pos1, 1f);
-            card2.transform.DOMove(pos2, 1f);
+           
+            card2.transform.DOMove(pos2, 1f).OnComplete(() => {
+               // card2.transform.DORotateQuaternion(targetRotation, 0.5f); // Smoothly rotate towards the target position
+            });
             yield return new WaitForSeconds(0.2f);
         }
     }

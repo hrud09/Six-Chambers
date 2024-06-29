@@ -13,6 +13,8 @@ public class Chamber : MonoBehaviour
 
     public List<CardInfo> chamberCards;
     public int index;
+
+    public Transform cardParent;
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();

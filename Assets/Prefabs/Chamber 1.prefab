@@ -285,6 +285,12 @@ MonoBehaviour:
   chamberCards: []
   index: 0
   cardParent: {fileID: 1061795735583007684}
+  bestCardsHolders:
+  - {fileID: 2132126157597343158}
+  - {fileID: 5317443935441947220}
+  - {fileID: 2933136252791552137}
+  - {fileID: 4647744391769166799}
+  - {fileID: 7243900081778216586}
 --- !u!65 &2063805985933014112
 BoxCollider:
   m_ObjectHideFlags: 0

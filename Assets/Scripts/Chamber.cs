@@ -11,10 +11,11 @@ public class Chamber : MonoBehaviour
     public Transform chipsHolderForChoosing;
     public Transform chipsHolderForDeposit;
 
-    public List<CardInfo> chamberCards;
+    public List<Card> chamberCards;
     public int index;
 
     public Transform cardParent;
+    public Transform[] bestCardsHolders;
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();

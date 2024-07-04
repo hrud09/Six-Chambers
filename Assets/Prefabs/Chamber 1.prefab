@@ -283,7 +283,7 @@ MonoBehaviour:
   chipsHolderForChoosing: {fileID: 5795078987376306819}
   chipsHolderForDeposit: {fileID: 3860391209328237086}
   chamberCards: []
-  index: 0
+  index: 2
   cardParent: {fileID: 1061795735583007684}
   bestCardsHolders:
   - {fileID: 2132126157597343158}
@@ -688,14 +688,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5551416649604845912}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2566869809308836785}
   m_Father: {fileID: 3010711870483195115}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &5719481056420040957
 GameObject:
   m_ObjectHideFlags: 0

@@ -57,7 +57,7 @@ public class CardManager : MonoBehaviour
                 {
                     cardTexture = cardSprite,
                     CardType = cardDeck.CardType,
-                    cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 1
+                    cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 2
                 };
                 cardsInDeck.Add(cardInfo);
             }
@@ -84,15 +84,12 @@ public class CardManager : MonoBehaviour
             CardInfo cardInfo1 = DrawRandomCard();
             CardInfo cardInfo2 = DrawRandomCard();
 
-
             cardsInHands.Add(cardInfo1);
             cardsInHands.Add(cardInfo2);
 
             Vector3 targetDirection = (chamberTransform.parent.position - chamberTransform.position).normalized;
             targetDirection.y = 0;
             Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-
-           
 
             GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
             GameObject card2 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
@@ -110,12 +107,8 @@ public class CardManager : MonoBehaviour
             if (chamberTransform.localPosition.x > 0) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 20, 180));
             else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
 
-
             card1.transform.DOMove(pos1, 1f);
-           
-            card2.transform.DOMove(pos2, 1f).OnComplete(() => {
-               // card2.transform.DORotateQuaternion(targetRotation, 0.5f); // Smoothly rotate towards the target position
-            });
+            card2.transform.DOMove(pos2, 1f);
             yield return new WaitForSeconds(0.2f);
         }
     }
@@ -166,7 +159,7 @@ public class CardManager : MonoBehaviour
         foreach (Transform t in cardsOnHands)
         {
             int index = cardsOnHands.IndexOf(t);
-            t.DOLocalRotate(Vector3.zero, 0.5f).SetDelay(cardsOnHands.IndexOf(t) * 0.3f).OnComplete(() =>
+            t.DOLocalRotate(Vector3.zero, 0.5f).SetDelay(cardsOnHands.IndexOf(t) * 0.03f).OnComplete(() =>
             {
                 if (index == cardsOnHands.Count - 1)
                 {
@@ -175,6 +168,7 @@ public class CardManager : MonoBehaviour
             });
         }
     }
+
     void CheckPokerLogics()
     {
         List<Card> cardsOnBoard = boardManager.cards;
@@ -185,22 +179,23 @@ public class CardManager : MonoBehaviour
 
         foreach (Transform t in chamberManager.chamberTransforms)
         {
-            List<Card> chamberCards = new List<Card>(cardsOnBoard);
             Chamber chamberSelected = t.GetComponent<Chamber>();
+
+            List<Card> chamberCards = new List<Card>(cardsOnBoard);
             chamberCards.AddRange(chamberSelected.chamberCards);
 
             HandEvaluation handEvaluation = EvaluateHand(chamberCards);
             int handValue = handEvaluation.HandValue;
-            print("Hand Value: " + handValue);
-            foreach (Card card in handEvaluation.HighValueCards)
+
+          /*  foreach (Card card in handEvaluation.HighValueCards)
             {
                 GameObject newCard = Instantiate(card.gameObject, card.gameObject.transform.position, card.transform.rotation, chamberSelected.bestCardsHolders[handEvaluation.HighValueCards.IndexOf(card)]);
                 newCard.transform.DOScale(Vector3.one, 0.5f);
                 newCard.transform.DOLocalMove(Vector3.zero, 1f).OnComplete(() => {
-
                     newCard.transform.DOLocalRotate(Vector3.zero, 0.5f);
                 });
-            }
+            }*/
+
             if (handValue > highestHandValue)
             {
                 highestHandValue = handValue;
@@ -212,14 +207,13 @@ public class CardManager : MonoBehaviour
             {
                 tiedChambers.Add(chamberSelected);
             }
-            print("Highest Hand Value: " + highestHandValue);
         }
 
         if (tiedChambers.Count == 1)
         {
             HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChamber.chamberCards)));
-            string highValueCards = string.Join(", ", winningHand.HighValueCards.Select(card => card.cardInfo.cardNumber.ToString()).ToArray());
-            winText.text = $"{winningChamber.index} Wins by {winType(highestHandValue)} with High Cards: {highValueCards}";
+           
+            winText.text = $"{winningChamber.index} Wins by {winType(highestHandValue)}";
         }
         else
         {
@@ -228,10 +222,8 @@ public class CardManager : MonoBehaviour
             if (winningChambers.Count == 1)
             {
                 HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChambers[0].chamberCards)));
-
-
-                string highValueCards = string.Join(", ", winningHand.HighValueCards.Select(card => card.cardInfo.cardNumber.ToString()).ToArray());
-                winText.text = $"{winningChambers[0].index} Wins by Tie-Breaker among Chambers: {tiedChambersIndices} with High Cards: {highValueCards}\nWins by {winType(highestHandValue)}";
+                
+                winText.text = $"{winningChambers[0].index} Wins by Tie-Breaker among Chambers: {tiedChambersIndices} by {winType(highestHandValue)}";
             }
             else
             {
@@ -241,223 +233,318 @@ public class CardManager : MonoBehaviour
             }
         }
     }
-    List<Chamber> BreakTie(List<Chamber> tiedChambers, int handValue)
-    {
-        List<Chamber> tiedWinners = new List<Chamber> { tiedChambers[0] };
 
-        // Get the sorted list of cards from the first tied chamber
-        List<Card> winningCards = new List<Card>(boardManager.cards);
-        winningCards.AddRange(tiedWinners[0].chamberCards);
-        winningCards = winningCards.OrderByDescending(card => card.cardInfo.cardNumber).ToList();
-
-        // Iterate through the rest of the tied chambers to compare their hands
-        foreach (var chamber in tiedChambers.Skip(1))
+        List<Chamber> BreakTie(List<Chamber> tiedChambers, int handValue)
         {
-            List<Card> currentCards = new List<Card>(boardManager.cards);
-            currentCards.AddRange(chamber.chamberCards);
-            currentCards = currentCards.OrderByDescending(card => card.cardInfo.cardNumber).ToList();
+            List<Chamber> tiedWinners = new List<Chamber>();
 
-            bool isTie = true;
-            for (int i = 0; i < winningCards.Count; i++)
+            switch (handValue)
             {
-                int winningCardValue = winningCards[i].cardInfo.cardNumber;
-                int currentCardValue = currentCards[i].cardInfo.cardNumber;
-
-                if (winningCardValue > currentCardValue)
-                {
-                    isTie = false;
+                case 1:
+                    tiedWinners = BreakHighCardTie(tiedChambers);
                     break;
-                }
-                else if (winningCardValue < currentCardValue)
-                {
-                    tiedWinners.Clear();
-                    tiedWinners.Add(chamber);
-                    winningCards = currentCards;
-                    isTie = false;
+                case 2:
+                    tiedWinners = BreakOnePairTie(tiedChambers);
                     break;
-                }
+                case 3:
+                    tiedWinners = BreakTwoPairTie(tiedChambers);
+                    break;
+                case 4:
+                    tiedWinners = BreakThreeOfAKindTie(tiedChambers);
+                    break;
+                case 5:
+                    tiedWinners = BreakStraightTie(tiedChambers);
+                    break;
+                case 6:
+                    tiedWinners = BreakFlushTie(tiedChambers);
+                    break;
+                case 7:
+                    tiedWinners = BreakFullHouseTie(tiedChambers);
+                    break;
+                case 8:
+                    tiedWinners = BreakFourOfAKindTie(tiedChambers);
+                    break;
+                case 9:
+                    tiedWinners = BreakStraightFlushTie(tiedChambers);
+                    break;
+                default:
+                    break;
             }
 
-            if (isTie)
-            {
-                tiedWinners.Add(chamber);
-            }
+            return tiedWinners;
         }
 
-        return tiedWinners;
-    }
-
-    public class HandEvaluation
-    {
-        public int HandValue { get; set; }
-        public List<Card> HighValueCards { get; set; }
-
-        public HandEvaluation(int handValue, List<Card> highValueCards)
+        List<Chamber> BreakHighCardTie(List<Chamber> tiedChambers)
         {
-            HandValue = handValue;
-            HighValueCards = highValueCards;
+            return tiedChambers.OrderByDescending(chamber => GetHighestCardValue(chamber.chamberCards)).ToList();
         }
-    }
 
+        List<Chamber> BreakOnePairTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetPairValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakTwoPairTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetTwoPairValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakThreeOfAKindTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetThreeOfAKindValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakStraightTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetHighestCardValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakFlushTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetHighestCardValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakFullHouseTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetThreeOfAKindValue(chamber.chamberCards)).ThenByDescending(chamber => GetPairValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakFourOfAKindTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetFourOfAKindValue(chamber.chamberCards)).ToList();
+        }
+
+        List<Chamber> BreakStraightFlushTie(List<Chamber> tiedChambers)
+        {
+            return tiedChambers.OrderByDescending(chamber => GetHighestCardValue(chamber.chamberCards)).ToList();
+        }
+
+        int GetHighestCardValue(List<Card> cards)
+        {
+            return cards.Max(card => card.cardInfo.cardNumber);
+        }
+
+        int GetPairValue(List<Card> cards)
+        {
+            var groups = cards.GroupBy(card => card.cardInfo.cardNumber);
+            var pairGroup = groups.FirstOrDefault(group => group.Count() == 2);
+            if (pairGroup != null)
+            {
+                return pairGroup.Key;
+            }
+            return 0; // Return 0 or handle case where no pair is found
+        }
+
+        int GetTwoPairValue(List<Card> cards)
+        {
+            var groups = cards.GroupBy(card => card.cardInfo.cardNumber);
+            var pairs = groups.Where(group => group.Count() == 2).Select(group => group.Key).ToList();
+
+            if (pairs.Count == 2)
+            {
+                // Sort pairs in descending order and return the highest pair value
+                pairs.Sort((a, b) => b.CompareTo(a));
+                return pairs[0];
+            }
+
+            return 0; // Return 0 or handle case where two pairs are not found
+        }
+
+        int GetThreeOfAKindValue(List<Card> cards)
+        {
+            var groups = cards.GroupBy(card => card.cardInfo.cardNumber);
+            var threeOfAKind = groups.FirstOrDefault(group => group.Count() == 3);
+
+            if (threeOfAKind != null)
+            {
+                return threeOfAKind.Key;
+            }
+
+            return 0; // Return 0 or handle case where three of a kind is not found
+        }
+
+        int GetFourOfAKindValue(List<Card> cards)
+        {
+            var groups = cards.GroupBy(card => card.cardInfo.cardNumber);
+            var fourOfAKind = groups.FirstOrDefault(group => group.Count() == 4);
+
+            if (fourOfAKind != null)
+            {
+                return fourOfAKind.Key;
+            }
+
+            return 0; // Return 0 or handle case where four of a kind is not found
+        }
+
+        // Additional methods for Straight and Flush are not needed for tie-breaking, as the highest card determines the winner
+
+        // Add methods for additional hand ranks (Straight, Flush, etc.) if necessary
 
     HandEvaluation EvaluateHand(List<Card> cards)
     {
-        // Order cards by number, treating Ace as the highest card by default
-        cards = cards.OrderBy(card => card.cardInfo.cardNumber).ToList();
+        List<Card> sortedCards = cards.OrderBy(card => card.cardInfo.cardNumber).ToList();
+        List<Card> sortedCardWithoutDuplicates = cards.OrderBy(card => card.cardInfo.cardNumber).Distinct().ToList();
 
-        //bool isFlush = cards.All(card => card.cardInfo.CardType == cards[0].cardInfo.CardType);
-        bool isFlush = true;
-        for (int i = 1; i < cards.Count; i++)
+        HandEvaluation result = new HandEvaluation();
+        result.HandValue = 0;
+
+        bool isStraight = IsStraight(sortedCardWithoutDuplicates);
+        bool isFlush = CheckFlush(sortedCards);
+
+
+        int tempHandValue = GetMultiplesValue(sortedCards, out List<Card> highValueCards);
+        
+        if (isStraight && isFlush)
         {
-            if (cards[i].cardInfo.CardType != cards[i - 1].cardInfo.CardType)
+            List<Card> flushedCards = cards
+      .GroupBy(card => card.cardInfo.CardType)
+      .Where(group => group.Count() >= 5)
+      .SelectMany(group => group.ToList())
+      .ToList();
+
+            flushedCards.Distinct();
+            if (flushedCards.Count >=5 && IsStraight(flushedCards))
             {
-                isFlush = false;
-                break;
+                result.HandValue = 9;
+                return result;
             }
+            
         }
-        bool isRoyalFlush = cards[0].cardInfo.cardNumber == 1 && cards[1].cardInfo.cardNumber == 10 && cards[2].cardInfo.cardNumber == 11 && cards[3].cardInfo.cardNumber == 12 && cards[4].cardInfo.cardNumber == 13 && isFlush;
-
-        bool isStraight = true;
-        for (int i = 1; i < cards.Count; i++)
+        else if (isFlush && tempHandValue < 6)
         {
-            if (cards[0].cardInfo.cardNumber == 1 )
+            result.HandValue = 6;
+            return result;
+        }
+        else if (isStraight && tempHandValue < 5)
+        {
+            result.HandValue = 5;
+            return result;
+        }
+
+        result.HandValue = tempHandValue;
+
+        return result;
+    }
+
+   
+    public bool IsStraight(List<Card> cards)
+    { 
+
+        List<Card> sortedCards = cards.OrderBy(card => card.cardInfo.cardNumber).ToList();
+
+
+        List<Card> uniqueCards = sortedCards.GroupBy(card => card.cardInfo.cardNumber)
+                                            .Select(group => group.First())
+                                            .ToList();
+
+    
+        for (int i = 0; i <= uniqueCards.Count - 5; i++)
+        {
+            bool isStraight = true;
+            for (int j = 1; j < 5; j++)
             {
-                if ((cards[1].cardInfo.cardNumber != 10) || cards[1].cardInfo.cardNumber != 2)
+                if (uniqueCards[i + j].cardInfo.cardNumber != uniqueCards[i].cardInfo.cardNumber + j)
                 {
                     isStraight = false;
                     break;
                 }
             }
-            else if (cards[i].cardInfo.cardNumber != cards[i - 1].cardInfo.cardNumber + 1)
+            if (isStraight)
             {
-                isStraight = false;
-                break;
+                return true;
             }
         }
 
-        // Check for Ace-low straight (Ace-2-3-4-5)
-        bool isAceLowStraight = cards[0].cardInfo.cardNumber == 1 &&
-                                cards[1].cardInfo.cardNumber == 2 &&
-                                cards[2].cardInfo.cardNumber == 3 &&
-                                cards[3].cardInfo.cardNumber == 4 &&
-                                cards[4].cardInfo.cardNumber == 5;
-
-        Dictionary<int, int> cardCounts = new Dictionary<int, int>();
-        foreach (var card in cards)
+        // Special case for Ace-low straight (5, 4, 3, 2, Ace)
+        if (uniqueCards.Count >= 5 &&
+            uniqueCards[0].cardInfo.cardNumber == 2 &&
+            uniqueCards[1].cardInfo.cardNumber == 3 &&
+            uniqueCards[2].cardInfo.cardNumber == 4 &&
+            uniqueCards[3].cardInfo.cardNumber == 5 &&
+            uniqueCards.Last().cardInfo.cardNumber == 14)
         {
-            int cardNumber = card.cardInfo.cardNumber; // Treat Ace as 14
-            if (!cardCounts.ContainsKey(cardNumber))
-            {
-                cardCounts[cardNumber] = 0;
-            }
-            cardCounts[cardNumber]++;
+            return true;
         }
 
-        bool isFourOfAKind = cardCounts.ContainsValue(4);
-        bool isThreeOfAKind = cardCounts.ContainsValue(3);
-        bool isPair = cardCounts.Values.Count(count => count == 2) == 1;
-        bool isTwoPair = cardCounts.Values.Count(count => count == 2) == 2;
-        bool isFullHouse = isThreeOfAKind && isPair;
-
-        List<Card> highValueCards = new List<Card>();
-        int handValue = 0;
-
-        if (isRoyalFlush)
-        {
-            handValue = 9;
-            highValueCards = cards;
-        }
-        else if (isFlush && (isStraight || isAceLowStraight))
-        {
-            handValue = 8;
-            highValueCards = cards;
-        }
-        else if (isFourOfAKind)
-        {
-            handValue = 7;
-            highValueCards = cards.Where(card => cardCounts[card.cardInfo.cardNumber] == 4).ToList();
-        }
-        else if (isFullHouse)
-        {
-            handValue = 6;
-            highValueCards = cards.Where(card => cardCounts[card.cardInfo.cardNumber] >= 2).ToList();
-        }
-        else if (isFlush)
-        {
-            handValue = 5;
-            highValueCards = cards;
-        }
-        else if (isStraight || isAceLowStraight)
-        {
-            handValue = 4;
-            highValueCards = cards;
-            print(handValue + " straight");
-        }
-        else if (isThreeOfAKind)
-        {
-            handValue = 3;
-            highValueCards = cards.Where(card => cardCounts[card.cardInfo.cardNumber] == 3).ToList();
-        }
-        else if (isTwoPair)
-        {
-            handValue = 2;
-            highValueCards = cards.Where(card => cardCounts[card.cardInfo.cardNumber] == 2).ToList();
-        }
-        else if (isPair)
-        {
-            handValue = 1;
-            highValueCards = cards.Where(card => cardCounts[card.cardInfo.cardNumber] == 2).ToList();
-        }
-        else
-        {
-            handValue = 0;
-            highValueCards = cards.OrderByDescending(card => card.cardInfo.cardNumber).Take(1).ToList();
-        }
-
-        return new HandEvaluation(handValue, highValueCards);
+        return false;
     }
 
 
-    WinType winType(int strength)
+
+    bool CheckFlush(List<Card> cards)
     {
-        switch (strength)
+        return cards.GroupBy(card => card.cardInfo.CardType).Any(group => group.Count() >= 5);
+    }
+
+    int GetMultiplesValue(List<Card> cards, out List<Card> highValueCards)
+    {
+        highValueCards = new List<Card>();
+
+        var groups = cards.GroupBy(card => card.cardInfo.cardNumber).OrderByDescending(group => group.Count()).ThenByDescending(group => group.Key);
+
+        var maxGroup = groups.First();
+        var secondMaxGroup = groups.Skip(1).FirstOrDefault();
+
+        if (maxGroup.Count() == 4)
         {
-            case 0:
-                return WinType.HighCard;
-            case 1:
-                return WinType.Pair;
-            case 2:
-                return WinType.TwoPair;
-            case 3:
-                return WinType.ThreeOfAKind;
-            case 4:
-                return WinType.Straight;
-            case 5:
-                return WinType.Flush;
-            case 6:
-                return WinType.FullHouse;
-            case 7:
-                return WinType.FourOfAKind;
-            case 8:
-                return WinType.StraightFlush;
-            case 9:
-                return WinType.RoyalFlush;
-            default:
-                return WinType.HighCard;
+            highValueCards.AddRange(maxGroup);
+            highValueCards.AddRange(cards.Except(maxGroup).OrderByDescending(card => card.cardInfo.cardNumber).Take(1));
+            return 8;
+        }
+
+        if (maxGroup.Count() == 3 && secondMaxGroup != null && secondMaxGroup.Count() >= 2)
+        {
+            highValueCards.AddRange(maxGroup);
+            highValueCards.AddRange(secondMaxGroup.Take(2));
+            return 7;
+        }
+
+        if (maxGroup.Count() == 3)
+        {
+            highValueCards.AddRange(maxGroup);
+            highValueCards.AddRange(cards.Except(maxGroup).OrderByDescending(card => card.cardInfo.cardNumber).Take(2));
+            return 4;
+        }
+
+        if (maxGroup.Count() == 2 && secondMaxGroup != null && secondMaxGroup.Count() == 2)
+        {
+            highValueCards.AddRange(maxGroup);
+            highValueCards.AddRange(secondMaxGroup.Take(2));
+            highValueCards.AddRange(cards.Except(maxGroup).Except(secondMaxGroup).OrderByDescending(card => card.cardInfo.cardNumber).Take(1));
+            return 3;
+        }
+
+        if (maxGroup.Count() == 2)
+        {
+            highValueCards.AddRange(maxGroup);
+            highValueCards.AddRange(cards.Except(maxGroup).OrderByDescending(card => card.cardInfo.cardNumber).Take(3));
+            return 2;
+        }
+
+        highValueCards.AddRange(cards.OrderByDescending(card => card.cardInfo.cardNumber).Take(5));
+        return 1;
+    }
+
+    string winType(int handValue)
+    {
+        switch (handValue)
+        {
+            case 1: return "High Card";
+            case 2: return "One Pair";
+            case 3: return "Two Pair";
+            case 4: return "Three of a Kind";
+            case 5: return "Straight";
+            case 6: return "Flush";
+            case 7: return "Full House";
+            case 8: return "Four of a Kind";
+            case 9: return "Straight Flush";
+            default: return "Unknown Hand";
         }
     }
 }
 
-public enum WinType
+public class HandEvaluation
 {
-    RoyalFlush,
-    StraightFlush,
-    FourOfAKind,
-    FullHouse,
-    Flush,
-    Straight,
-    ThreeOfAKind,
-    TwoPair,
-    Pair,
-    HighCard
+    public int HandValue { get; set; }
+   // public List<Card> HighValueCards { get; set; }
 }

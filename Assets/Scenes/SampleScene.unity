@@ -284,7 +284,6 @@ MonoBehaviour:
   signWiseCards:
   - CardType: 0
     sprites:
-    - {fileID: 21300000, guid: d119c28df9560e74ca4b9d67dcd44115, type: 3}
     - {fileID: 21300000, guid: 2d049549d3502604cbbc728baf76a0bb, type: 3}
     - {fileID: 21300000, guid: 915c4b0cb6ccdaf4dabca47620cf9abc, type: 3}
     - {fileID: 21300000, guid: 64c1804c37b666b44a269607eb647762, type: 3}
@@ -297,9 +296,9 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 843e9bf55fcdba04da5f592d8032d212, type: 3}
     - {fileID: 21300000, guid: b4c5b978d5f70b447b1b379ca3633ed7, type: 3}
     - {fileID: 21300000, guid: d9887c3df89509f488927e3c93bbf602, type: 3}
+    - {fileID: 21300000, guid: d119c28df9560e74ca4b9d67dcd44115, type: 3}
   - CardType: 1
     sprites:
-    - {fileID: 21300000, guid: 8a8c2f017e635a24f9ba3343d0aef13a, type: 3}
     - {fileID: 21300000, guid: d1c921be24feb2742966bb3fc08dda3c, type: 3}
     - {fileID: 21300000, guid: 9bb04b59cbf7e994986e72e62008a0ca, type: 3}
     - {fileID: 21300000, guid: 570cf50b64c69894fb543589c97137f8, type: 3}
@@ -312,9 +311,9 @@ MonoBehaviour:
     - {fileID: 21300000, guid: c4cd45250fe2cad46adcd047656eda53, type: 3}
     - {fileID: 21300000, guid: c54e52b2b636d7c498acbccbbd507a7d, type: 3}
     - {fileID: 21300000, guid: 9f9dd856f8e9af74e960f1de90e858fd, type: 3}
+    - {fileID: 21300000, guid: 8a8c2f017e635a24f9ba3343d0aef13a, type: 3}
   - CardType: 2
     sprites:
-    - {fileID: 21300000, guid: 031dbd60a06cba04f88efb2197f4131f, type: 3}
     - {fileID: 21300000, guid: a033fb1a9721177489bb6d47c3765cc0, type: 3}
     - {fileID: 21300000, guid: 60bdef88a7492af41b346d4b7163df55, type: 3}
     - {fileID: 21300000, guid: 398838629b887584cbf24a0babaca7a5, type: 3}
@@ -327,9 +326,9 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 5b9285ae91d001144a7254a8c742803d, type: 3}
     - {fileID: 21300000, guid: 2475f707d6431aa419899780df26ebf1, type: 3}
     - {fileID: 21300000, guid: 0417bc14bac45fd4fad01aafd4e30989, type: 3}
+    - {fileID: 21300000, guid: 031dbd60a06cba04f88efb2197f4131f, type: 3}
   - CardType: 3
     sprites:
-    - {fileID: 21300000, guid: d852b92545912864d867ec442f20ea3d, type: 3}
     - {fileID: 21300000, guid: d1d985a9cefde864ca5e408294640283, type: 3}
     - {fileID: 21300000, guid: b8a861e5d72d6d34cabb1416532ab4a1, type: 3}
     - {fileID: 21300000, guid: 31c28d27c1f24c541a9f95e1c486b4f8, type: 3}
@@ -342,6 +341,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 1875e6353e23d304288d3c2c4ad343ec, type: 3}
     - {fileID: 21300000, guid: be3d9587545d264489559b808889f587, type: 3}
     - {fileID: 21300000, guid: 3f45a2fa8e19bcb458ef5881060a5758, type: 3}
+    - {fileID: 21300000, guid: d852b92545912864d867ec442f20ea3d, type: 3}
   cardsInDeck: []
   tempDeck: []
   cardsInHands: []

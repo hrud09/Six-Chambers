@@ -19,7 +19,7 @@ public class RangerManager : MonoBehaviour
 
                 if (index == amount - 1)
                 {
-                    cardManager.RevealLastTwoCards();
+                    cardManager.pokerEvaluator.RevealLastTwoCards();
                 }
             
             });

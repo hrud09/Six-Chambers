@@ -5,7 +5,7 @@ using UnityEngine;
 public class ChamberManager : MonoBehaviour
 {
     public Transform[] chamberTransforms;
-
+    public List<Chamber> chambers;
     public Chamber rangerChosenChamber;
     public Chamber playerChosenChamber;
 

@@ -99,9 +99,10 @@ public class CardManager : MonoBehaviour
 
             chamber.chamberCards.Add(card2.GetComponent<Card>());
             chamber.chamberCards.Add(card1.GetComponent<Card>());
-
             Vector3 pos1 = chamber.cardParent.position;
             Vector3 pos2 = pos1 - chamberTransform.forward * 1f + Vector3.up * 0.2f;
+
+            chamber.InitializeOriginalPositions();
 
             if (chamberTransform.localPosition.x > 0) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 20, 180));
             else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
@@ -133,6 +134,6 @@ public class CardManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1);
-        chamberManager.playerChipsManager.playersTurn = true;
+        chamberManager.playerHandManager.playersTurn = true;
     }
 }

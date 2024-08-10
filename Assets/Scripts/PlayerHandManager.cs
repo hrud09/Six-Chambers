@@ -19,29 +19,83 @@ public class PlayerHandManager : MonoBehaviour
 
     public int setPoint;
     public TMP_Text pointText;
-    public void SelectChamber(Chamber _choosenChamber)
+    public void SelectPlayerChamber(Chamber _choosenChamber)
     {
         chamberSelected = true;
         playerChosenChamber = _choosenChamber;
-        StartCoroutine(chamberManager.PickRangersHand());
+        chamberManager.PickRangersHand();
     }
- 
+
     public void CheckSelectedChamber(Chamber winningChamber, int point)
     {
-        if (playerChosenChamber == winningChamber)
+        if (playerChosenChamber != chamberManager.rangerChosenChamber)
         {
-            setPoint += point;
-            pointText.text = setPoint.ToString();
+            if (winningChamber == playerChosenChamber)
+            {
+
+                setPoint += point;
+
+            }
+            else if(winningChamber == chamberManager.rangerChosenChamber)
+            {
+                setPoint -= point;
+            }
+            else
+            {
+                //nothing
+
+            }
         }
+        else if (playerChosenChamber == chamberManager.rangerChosenChamber)
+        {
+            if (winningChamber != playerChosenChamber)
+            {
+                setPoint += 2 * point;
+            }
+            else if (winningChamber == playerChosenChamber)
+            {
+                setPoint -= 2 * point;
+            }
+        }
+
+        pointText.text = setPoint.ToString();
+
 
     }
     public void CheckSelectedChamber(List<Chamber> winningChambers, int point)
     {
-        if (winningChambers.Contains(playerChosenChamber))
+        print("Here");
+        if (playerChosenChamber != chamberManager.rangerChosenChamber)
         {
-            setPoint += point;
-            pointText.text = setPoint.ToString();
+            if (playerChosenChamber)
+            {
+
+                setPoint += point;
+
+            }
+            else if (chamberManager.rangerChosenChamber)
+            {
+                setPoint -= point;
+            }
+            else
+            {
+                //nothing
+
+            }
         }
+        else if (playerChosenChamber == chamberManager.rangerChosenChamber)
+        {
+          /*  if ( != playerChosenChamber)
+            {
+                setPoint += 2 * point;
+            }
+            else if (winningChamber == playerChosenChamber)
+            {
+                setPoint -= 2 * point;
+            }*/
+        }
+
+        pointText.text = setPoint.ToString();
 
     }
 }

@@ -16,6 +16,8 @@ public class Chamber : MonoBehaviour
     private Vector3[] originalPositions;
     private List<Tween> cardTweens = new List<Tween>();
     public GameObject layerSelectionAura;
+    public GameObject topRankUI;
+   
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();
@@ -37,10 +39,10 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (chamberManager.playerHandManager.playerChosenChamber == null && chamberManager.playerHandManager.playersTurn)
+        if (chamberManager.playerHandManager.playerChosenChamber == null)
         {
            // layerSelectionAura.SetActive(false);
-            chamberManager.playerHandManager.SelectChamber(this);
+            chamberManager.playerHandManager.SelectPlayerChamber(this);
         }
     }
 

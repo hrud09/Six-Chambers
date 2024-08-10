@@ -366,7 +366,7 @@ MonoBehaviour:
   winText: {fileID: 1203198680}
   cardManager: {fileID: 63751640}
   playerHandManager: {fileID: 608675221}
-  rankwisePoints: 6400000096000000c8000000fa000000f4010000ee020000e8030000d007000088130000a8610000
+  rankwisePoints: 010000000200000003000000040000000500000006000000070000000800000009000000
 --- !u!1 &186539410
 GameObject:
   m_ObjectHideFlags: 0
@@ -630,6 +630,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9041945518412945263, guid: 00de879d6508d5d4c9884339900e90f1,
+        type: 3}
+      propertyPath: index
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1130,6 +1135,8 @@ MonoBehaviour:
   rangerChosenChamber: {fileID: 0}
   playerHandManager: {fileID: 608675221}
   rangerManager: {fileID: 2136930896}
+  totalSelectionTime: 4
+  initialDelay: 0.2
 --- !u!114 &846792091
 MonoBehaviour:
   m_ObjectHideFlags: 0

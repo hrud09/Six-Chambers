@@ -7,8 +7,6 @@ using UnityEngine;
 
 public class PokerEvaluator : MonoBehaviour
 {
-
-   
     string winType(int handValue)
     {
         switch (handValue)
@@ -64,7 +62,7 @@ public class PokerEvaluator : MonoBehaviour
     void CheckPokerLogics()
     {
         List<Card> cardsOnBoard = cardManager.boardManager.cards;
-        Chamber tempWinningChamber = null;
+        Chamber winningChamber = null;
         List<Chamber> winningChambers;
         int highestHandValue = -1;
         List<Chamber> tiedChambers = new List<Chamber>();
@@ -73,21 +71,21 @@ public class PokerEvaluator : MonoBehaviour
         {
             Chamber chamberSelected = t.GetComponent<Chamber>();
 
-            List<Card> allChamberCards = new List<Card>(cardsOnBoard);
-            allChamberCards.AddRange(chamberSelected.chamberCards);
+            List<Card> chamberCards = new List<Card>(cardsOnBoard);
+            chamberCards.AddRange(chamberSelected.chamberCards);
 
-            HandEvaluation handEvaluation = EvaluateHand(allChamberCards);
+            HandEvaluation handEvaluation = EvaluateHand(chamberCards);
             chamberSelected.chamberCards = handEvaluation.HighValueCards;
             int handValue = handEvaluation.HandValue;
             if (handValue > highestHandValue)
             {
                 highestHandValue = handValue;
-                tempWinningChamber = chamberSelected;
+                winningChamber = chamberSelected;
                 tiedChambers.Clear();
-                tiedChambers.Add(tempWinningChamber);
-                
+                tiedChambers.Add(winningChamber);
+
             }
-            else if (handValue == highestHandValue && !tiedChambers.Contains(chamberSelected))
+            else if (handValue == highestHandValue)
             {
                 tiedChambers.Add(chamberSelected);
             }
@@ -95,10 +93,9 @@ public class PokerEvaluator : MonoBehaviour
 
         if (tiedChambers.Count == 1)
         {
-            HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(tempWinningChamber.chamberCards)));
+            HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChamber.chamberCards)));
 
-            winText.text = $"{tempWinningChamber.index} Wins by {winType(highestHandValue)}";
-            playerHandManager.CheckSelectedChamber(tempWinningChamber, rankwisePoints[highestHandValue - 1]);
+            winText.text = $"{winningChamber.index} Wins by {winType(highestHandValue)}";
         }
         else
         {
@@ -107,8 +104,9 @@ public class PokerEvaluator : MonoBehaviour
             if (winningChambers.Count == 1)
             {
                 HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChambers[0].chamberCards)));
-
-                winText.text = $"{winningChambers[0].index} Wins by {winType(highestHandValue)}";
+                tiedChambers[0].topRankUI.SetActive(true);
+                playerHandManager.CheckSelectedChamber(tiedChambers[0], rankwisePoints[highestHandValue - 1]);
+                winText.text = $"{winningChambers[0].index} Wins by Tie-Breaker among Chambers: {tiedChambersIndices} by {winType(highestHandValue)}";
             }
             else
             {
@@ -120,24 +118,23 @@ public class PokerEvaluator : MonoBehaviour
                 message += " Wins by " + winType(highestHandValue).ToString();
                 winText.text = message;
             }
-            playerHandManager.CheckSelectedChamber(winningChambers, rankwisePoints[highestHandValue - 1]);
+            playerHandManager.CheckSelectedChamber(tiedChambers, rankwisePoints[highestHandValue - 1]);
             foreach (Chamber ch in tiedChambers)
             {
 
                 Debug.LogWarning(
-                   
+
                     $"{ch.chamberCards[0].cardInfo.cardNumber},{ch.chamberCards[1].cardInfo.cardNumber},{ch.chamberCards[2].cardInfo.cardNumber}," +
                     $"{ch.chamberCards[3].cardInfo.cardNumber}, {ch.chamberCards[4].cardInfo.cardNumber}"
 
                     );
 
-                
+
             }
         }
-       
     }
 
-   
+
     HandEvaluation EvaluateHand(List<Card> cards)
     {
         List<Card> sortedCards = cards.OrderBy(card => card.cardInfo.cardNumber).ToList();
@@ -149,7 +146,7 @@ public class PokerEvaluator : MonoBehaviour
         bool isStraight = IsStraight(sortedCardWithoutDuplicates);
         bool isFlush = CheckFlush(sortedCards);
 
-        
+
         int tempHandValue = GetMultiplesValue(sortedCards, out List<Card> highValueCards);
         result.HighValueCards = highValueCards;
 
@@ -173,7 +170,7 @@ public class PokerEvaluator : MonoBehaviour
         {
             result.HandValue = 6;
 
-           
+
             return result;
         }
         else if (isStraight && tempHandValue < 5)
@@ -195,7 +192,7 @@ public class PokerEvaluator : MonoBehaviour
                     allCardsInHand.Add(allCardsInHand[i]);
                 }
             }
-           result.HighValueCards = allCardsInHand;
+            result.HighValueCards = allCardsInHand;
             return result;
         }
 
@@ -305,6 +302,10 @@ public class PokerEvaluator : MonoBehaviour
     List<Chamber> BreakTie(List<Chamber> tiedChambers)
     {
         List<Chamber> highestChambers = new List<Chamber>();
+
+        if (tiedChambers == null || tiedChambers.Count == 0)
+            return highestChambers;
+
         highestChambers.AddRange(tiedChambers);
         for (int j = 1; j < highestChambers.Count; j++)
         {
@@ -317,13 +318,13 @@ public class PokerEvaluator : MonoBehaviour
                 {
                     highestChambers.RemoveAt(j - 1);
                     j--;
-                    break; 
+                    break;
                 }
                 else if (currentCardNumber < previousCardNumber)
                 {
                     highestChambers.RemoveAt(j);
                     j--;
-                    break; 
+                    break;
                 }
             }
         }

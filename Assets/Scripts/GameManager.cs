@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;  // To restart the scene
 public class GameManager : MonoBehaviour
 {
     private bool isPaused = false;
+    public GameObject nextRoundButton;
 
     // Start is called before the first frame update
     void Start()

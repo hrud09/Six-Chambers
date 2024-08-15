@@ -47,6 +47,6 @@ public class ChamberManager : MonoBehaviour
         rangerChosenChamber = chamberTransforms[currentIndex].GetComponent<Chamber>();
         rangerManager.SelectRangerChamber(rangerChosenChamber);
         // Print the final index
-        Debug.Log("Final Index: " + currentIndex);
+      
     }
 }

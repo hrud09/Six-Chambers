@@ -17,8 +17,17 @@ public class PlayerHandManager : MonoBehaviour
     public bool playersTurn;
 
 
-    public int setPoint;
+    public int currentSetPoint;
     public TMP_Text pointText;
+
+    public GameObject chooseAgainPopUp;
+    public SetAndRoundManager setAndRoundManager;
+    public GameManager gameManager;
+    private void Start()
+    {
+        currentSetPoint = PlayerPrefs.GetInt("PlayerPoint", 0);
+        pointText.text = currentSetPoint.ToString();
+    }
     public void SelectPlayerChamber(Chamber _choosenChamber)
     {
         chamberSelected = true;
@@ -28,17 +37,18 @@ public class PlayerHandManager : MonoBehaviour
 
     public void CheckSelectedChamber(Chamber winningChamber, int point)
     {
+        print("Here Less");
         if (playerChosenChamber != chamberManager.rangerChosenChamber)
         {
             if (winningChamber == playerChosenChamber)
             {
 
-                setPoint += point;
+                currentSetPoint += point;
 
             }
             else if(winningChamber == chamberManager.rangerChosenChamber)
             {
-                setPoint -= point;
+                currentSetPoint -= point;
             }
             else
             {
@@ -50,52 +60,59 @@ public class PlayerHandManager : MonoBehaviour
         {
             if (winningChamber != playerChosenChamber)
             {
-                setPoint += 2 * point;
+                currentSetPoint += 2 * point;
             }
             else if (winningChamber == playerChosenChamber)
             {
-                setPoint -= 2 * point;
+                currentSetPoint -= 2 * point;
             }
         }
 
-        pointText.text = setPoint.ToString();
+        PlayerPrefs.SetInt("PlayerPoint", currentSetPoint);
+        pointText.text = currentSetPoint.ToString();
 
+       setAndRoundManager.EndRound();
 
     }
     public void CheckSelectedChamber(List<Chamber> winningChambers, int point)
     {
-        print("Here");
+        print("Here Many");
         if (playerChosenChamber != chamberManager.rangerChosenChamber)
         {
-            if (playerChosenChamber)
+            if (winningChambers.Contains(playerChosenChamber))
             {
 
-                setPoint += point;
+                currentSetPoint += point;
 
             }
-            else if (chamberManager.rangerChosenChamber)
+            else if (winningChambers.Contains(chamberManager.rangerChosenChamber))
             {
-                setPoint -= point;
+                currentSetPoint -= point;
+            }
+            else if (winningChambers.Contains(playerChosenChamber) && winningChambers.Contains(chamberManager.rangerChosenChamber))
+            {
+                currentSetPoint += 3 * point;
             }
             else
             {
-                //nothing
-
+                //Nothing
             }
         }
         else if (playerChosenChamber == chamberManager.rangerChosenChamber)
         {
-          /*  if ( != playerChosenChamber)
+            if (winningChambers.Contains(chamberManager.rangerChosenChamber))
             {
-                setPoint += 2 * point;
+                currentSetPoint -= point;
             }
-            else if (winningChamber == playerChosenChamber)
+
+            else
             {
-                setPoint -= 2 * point;
-            }*/
+                //Nothing
+            }
         }
 
-        pointText.text = setPoint.ToString();
-
+        PlayerPrefs.SetInt("PlayerPoint", currentSetPoint);
+        pointText.text = currentSetPoint.ToString();
+        setAndRoundManager.EndRound();
     }
 }

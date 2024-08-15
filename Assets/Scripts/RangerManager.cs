@@ -9,11 +9,17 @@ public class RangerManager : MonoBehaviour
     public List<Transform> availableChips;
     public CardManager cardManager;
     public Chamber rangerSelectedChamber;
+    public PlayerHandManager playerHandManager;
     public void SelectRangerChamber(Chamber _selectedChamber)
     {
         rangerSelectedChamber = _selectedChamber;
         rangerSelectedChamber.chamberCards[0].playerSelectionAura.SetActive(false);
         rangerSelectedChamber.chamberCards[0].rangerSelectionAura.SetActive(true);
         cardManager.pokerEvaluator.RevealLastTwoCards();
+        if (playerHandManager.playerChosenChamber == rangerSelectedChamber)
+        {
+           // playerHandManager.chooseAgainPopUp.SetActive(true);
+
+        }
     }
 }

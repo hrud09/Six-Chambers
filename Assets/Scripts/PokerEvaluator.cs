@@ -94,7 +94,7 @@ public class PokerEvaluator : MonoBehaviour
         if (tiedChambers.Count == 1)
         {
             HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChamber.chamberCards)));
-
+            playerHandManager.CheckSelectedChamber(tiedChambers[0], rankwisePoints[highestHandValue - 1]);
             winText.text = $"{winningChamber.index} Wins by {winType(highestHandValue)}";
         }
         else
@@ -105,7 +105,7 @@ public class PokerEvaluator : MonoBehaviour
             {
                 HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChambers[0].chamberCards)));
                 tiedChambers[0].topRankUI.SetActive(true);
-                playerHandManager.CheckSelectedChamber(tiedChambers[0], rankwisePoints[highestHandValue - 1]);
+                playerHandManager.CheckSelectedChamber(winningChambers[0], rankwisePoints[highestHandValue - 1]);
                 winText.text = $"{winningChambers[0].index} Wins by Tie-Breaker among Chambers: {tiedChambersIndices} by {winType(highestHandValue)}";
             }
             else
@@ -117,8 +117,8 @@ public class PokerEvaluator : MonoBehaviour
                 }
                 message += " Wins by " + winType(highestHandValue).ToString();
                 winText.text = message;
+               playerHandManager.CheckSelectedChamber(winningChambers, rankwisePoints[highestHandValue - 1]);
             }
-            playerHandManager.CheckSelectedChamber(tiedChambers, rankwisePoints[highestHandValue - 1]);
             foreach (Chamber ch in tiedChambers)
             {
 

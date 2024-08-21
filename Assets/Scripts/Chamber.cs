@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using TMPro;
 
 public class Chamber : MonoBehaviour
 {
@@ -17,7 +18,11 @@ public class Chamber : MonoBehaviour
     private List<Tween> cardTweens = new List<Tween>();
     public GameObject layerSelectionAura;
     public GameObject topRankUI;
-   
+
+
+    [Header("Winning Text")]
+    public TMP_Text rankText;
+
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();

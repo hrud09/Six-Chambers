@@ -18,10 +18,10 @@ public class SetAndRoundManager : MonoBehaviour
     public TMP_Text thisSetQuotaText;
     private int pointsQuota;
     public PlayerHandManager playerHandManager;
+
     void Start()
     {
-        currentSetNumber = PlayerPrefs.GetInt("currentSet", 1);
-        roundCount = PlayerPrefs.GetInt("roundCount", 1);  
+        LoadProgress();
         SetPointsQuota();
         UpdateSetCount();
         UpdateRoundCount();
@@ -29,9 +29,7 @@ public class SetAndRoundManager : MonoBehaviour
 
     void SetPointsQuota()
     {
-
         pointsQuota = pointsQuotaSet[currentSetNumber - 1];
-
     }
 
     void UpdateSetCount()
@@ -47,7 +45,6 @@ public class SetAndRoundManager : MonoBehaviour
 
     public void EndRound()
     {
-        
         roundCount++;
 
         playerHandManager.gameManager.nextRoundButton.SetActive(true);
@@ -64,19 +61,18 @@ public class SetAndRoundManager : MonoBehaviour
         }
 
         SaveProgress();
-       // UpdateRoundCount();
-       
     }
 
     public void NextRound()
     {
-        playerHandManager.gameManager.RestartGame();
+        playerHandManager.gameManager.RestartGameForLoadingNextLevel();
     }
+
     void PromoteToNextSet()
     {
         currentSetNumber++;
         PlayerPrefs.SetInt("currentSet", currentSetNumber);
-        playerHandManager.currentSetPoint = 0; 
+        playerHandManager.currentSetPoint = 0;
         playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
         SetPointsQuota();
         roundCount = 0;
@@ -96,5 +92,29 @@ public class SetAndRoundManager : MonoBehaviour
         PlayerPrefs.SetInt("currentSet", currentSetNumber);
         PlayerPrefs.SetInt("roundCount", roundCount);
         PlayerPrefs.Save(); // Ensure data is saved
+    }
+
+    void LoadProgress()
+    {
+        currentSetNumber = PlayerPrefs.GetInt("currentSet", 1);
+        roundCount = PlayerPrefs.GetInt("roundCount", 1);
+    }
+
+    // Method to reset everything including sets, rounds, and saved data
+    public void ResetAll()
+    {
+        currentSetNumber = 1;
+        roundCount = 0;
+        playerHandManager.currentSetPoint = 0;
+
+        PlayerPrefs.DeleteKey("currentSet");
+        PlayerPrefs.DeleteKey("roundCount");
+        PlayerPrefs.Save();
+
+        SetPointsQuota();
+        UpdateSetCount();
+        UpdateRoundCount();
+
+        playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
     }
 }

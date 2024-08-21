@@ -1,5 +1,6 @@
 using DG.Tweening;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -38,25 +39,46 @@ public class PokerEvaluator : MonoBehaviour
             {
                 if (index == cardManager.boardManager.cardsOnBoard.Count - 1)
                 {
-                    RevealEveryOnesCards();
+                   StartCoroutine(RevealEveryOnesCards());
                 }
             });
         }
     }
 
-    public void RevealEveryOnesCards()
+    public IEnumerator RevealEveryOnesCards()
     {
-        foreach (Transform t in cardManager.cardsOnHands)
+
+        foreach (var item in cardManager.chamberManager.chambers)
         {
-            int index = cardManager.cardsOnHands.IndexOf(t);
-            t.DOLocalRotate(Vector3.zero, 0.5f).SetDelay(cardManager.cardsOnHands.IndexOf(t) * 0.03f).OnComplete(() =>
+            Chamber chamber = item;
+            Transform lastCardTransform = chamber.chamberCards[1].transform;
+            int index = cardManager.chamberManager.chambers.IndexOf(item);
+            lastCardTransform.DOLocalRotate(Vector3.zero, 0.5f).OnComplete(() =>
             {
-                if (index == cardManager.cardsOnHands.Count - 1)
-                {
-                    CheckPokerLogics();
-                }
+                CheckHand(chamber);
+
             });
+
+            yield return new WaitForSeconds(0.5f);
         }
+        CheckPokerLogics(); 
+    }
+
+    public void CheckHand(Chamber chamber)
+    {
+        Chamber selectedChamber = chamber;
+        List<Card> cardsOnBoard = cardManager.boardManager.cards;
+        List<Card> all7cardsOnHand = new List<Card>(cardsOnBoard);
+        all7cardsOnHand.AddRange(selectedChamber.chamberCards);
+
+        HandEvaluation handEvaluation = EvaluateHand(all7cardsOnHand);
+       // selectedChamber.chamberCards = handEvaluation.HighValueCards;
+        int handValue = handEvaluation.HandValue;
+
+
+        selectedChamber.rankText.enabled = true;
+       // selectedChamber.rankText.fontSize = 0.65f;
+        selectedChamber.rankText.text = winType(handValue);
     }
 
     void CheckPokerLogics()
@@ -67,9 +89,9 @@ public class PokerEvaluator : MonoBehaviour
         int highestHandValue = -1;
         List<Chamber> tiedChambers = new List<Chamber>();
 
-        foreach (Transform t in cardManager.chamberManager.chamberTransforms)
+        foreach (Transform chamberTransform in cardManager.chamberManager.chamberTransforms)
         {
-            Chamber chamberSelected = t.GetComponent<Chamber>();
+            Chamber chamberSelected = chamberTransform.GetComponent<Chamber>();
 
             List<Card> chamberCards = new List<Card>(cardsOnBoard);
             chamberCards.AddRange(chamberSelected.chamberCards);
@@ -77,6 +99,12 @@ public class PokerEvaluator : MonoBehaviour
             HandEvaluation handEvaluation = EvaluateHand(chamberCards);
             chamberSelected.chamberCards = handEvaluation.HighValueCards;
             int handValue = handEvaluation.HandValue;
+
+
+         /*   chamberSelected.rankText.enabled = true;
+            chamberSelected.rankText.text = winType(handValue);
+*/
+
             if (handValue > highestHandValue)
             {
                 highestHandValue = handValue;
@@ -96,6 +124,10 @@ public class PokerEvaluator : MonoBehaviour
             HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChamber.chamberCards)));
             playerHandManager.CheckSelectedChamber(tiedChambers[0], rankwisePoints[highestHandValue - 1]);
             winText.text = $"{winningChamber.index} Wins by {winType(highestHandValue)}";
+            tiedChambers[0].topRankUI.SetActive(true);
+
+            tiedChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.5f);
+            tiedChambers[0].rankText.fontSize = 0.65f;
         }
         else
         {
@@ -104,7 +136,11 @@ public class PokerEvaluator : MonoBehaviour
             if (winningChambers.Count == 1)
             {
                 HandEvaluation winningHand = EvaluateHand(new List<Card>(cardsOnBoard.Concat(winningChambers[0].chamberCards)));
-                tiedChambers[0].topRankUI.SetActive(true);
+
+                winningChambers[0].topRankUI.SetActive(true);
+
+                winningChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.5f);
+                winningChambers[0].rankText.fontSize = 0.65f;
                 playerHandManager.CheckSelectedChamber(winningChambers[0], rankwisePoints[highestHandValue - 1]);
                 winText.text = $"{winningChambers[0].index} Wins by Tie-Breaker among Chambers: {tiedChambersIndices} by {winType(highestHandValue)}";
             }
@@ -113,12 +149,19 @@ public class PokerEvaluator : MonoBehaviour
                 string message = "";
                 foreach (var item in winningChambers)
                 {
+                    item.topRankUI.SetActive(true);
+                    item.rankText.fontSize = 0.65f;
+                    item.topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.5f);
                     message += item.index.ToString() + ",";
                 }
                 message += " Wins by " + winType(highestHandValue).ToString();
                 winText.text = message;
                playerHandManager.CheckSelectedChamber(winningChambers, rankwisePoints[highestHandValue - 1]);
             }
+
+
+
+            //Debug
             foreach (Chamber ch in tiedChambers)
             {
 

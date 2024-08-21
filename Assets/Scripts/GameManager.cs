@@ -7,7 +7,8 @@ public class GameManager : MonoBehaviour
 {
     private bool isPaused = false;
     public GameObject nextRoundButton;
-
+    public SetAndRoundManager setAndRoundManager;
+    public PlayerHandManager playerHandManager;
     // Start is called before the first frame update
     void Start()
     {
@@ -37,9 +38,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void RestartGame()
+    public void RestartGameForLoadingNextLevel()
     {
         Time.timeScale = 1;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+
+    public void RestartGame()
+    {
+        setAndRoundManager.ResetAll();
+        PlayerPrefs.SetInt("PlayerPoint", 0);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

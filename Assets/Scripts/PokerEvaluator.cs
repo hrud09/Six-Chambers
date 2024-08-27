@@ -168,7 +168,7 @@ public class PokerEvaluator : MonoBehaviour
                 Debug.LogWarning(
 
                     $"{ch.chamberCards[0].cardInfo.cardNumber},{ch.chamberCards[1].cardInfo.cardNumber},{ch.chamberCards[2].cardInfo.cardNumber}," +
-                    $"{ch.chamberCards[3].cardInfo.cardNumber}, {ch.chamberCards[4].cardInfo.cardNumber}"
+                    $"{ch.chamberCards[3].cardInfo.cardNumber}, {ch.chamberCards[4].cardInfo.cardNumber}____{cardManager.chamberManager.chambers.IndexOf(ch)}"
 
                     );
 
@@ -188,7 +188,10 @@ public class PokerEvaluator : MonoBehaviour
 
         bool isStraight = IsStraight(sortedCardWithoutDuplicates);
         bool isFlush = CheckFlush(sortedCards);
-
+        if (isStraight)
+        {
+          
+        }
 
         int tempHandValue = GetMultiplesValue(sortedCards, out List<Card> highValueCards);
         result.HighValueCards = highValueCards;
@@ -205,37 +208,29 @@ public class PokerEvaluator : MonoBehaviour
             if (flushedCards.Count >= 5 && IsStraight(flushedCards))
             {
                 result.HandValue = 9;
+                result.HighValueCards = flushedCards;
                 return result;
             }
 
         }
         else if (isFlush && tempHandValue < 6)
         {
+            List<Card> flushedCards = cards
+.GroupBy(card => card.cardInfo.CardType)
+.Where(group => group.Count() >= 5)
+.SelectMany(group => group.ToList())
+.ToList();
+
+            flushedCards.Distinct();
             result.HandValue = 6;
-
-
+            result.HighValueCards = flushedCards;
             return result;
         }
         else if (isStraight && tempHandValue < 5)
         {
             result.HandValue = 5;
-            List<Card> allCardsInHand = new List<Card>();
-
-            allCardsInHand.Add(sortedCardWithoutDuplicates[0]);
-
-            for (int i = 1; i < allCardsInHand.Count; i++)
-            {
-                if (allCardsInHand[i].cardInfo.cardNumber == allCardsInHand[i - 1].cardInfo.cardNumber + 1)
-                {
-                    allCardsInHand.Add(allCardsInHand[i]);
-                }
-                else
-                {
-                    allCardsInHand = new List<Card>();
-                    allCardsInHand.Add(allCardsInHand[i]);
-                }
-            }
-            result.HighValueCards = allCardsInHand;
+            result.HighValueCards = StraightCards(sortedCards);
+          
             return result;
         }
 
@@ -245,6 +240,50 @@ public class PokerEvaluator : MonoBehaviour
     }
 
     public bool IsStraight(List<Card> cards)
+    {
+       
+        List<Card> sortedCards = cards.OrderBy(card => card.cardInfo.cardNumber).ToList();
+
+
+        List<Card> uniqueCards = sortedCards.GroupBy(card => card.cardInfo.cardNumber)
+                                            .Select(group => group.First())
+                                            .ToList();
+
+
+        for (int i = 0; i <= uniqueCards.Count - 5; i++)
+        {
+            bool isStraight = true;
+            for (int j = 1; j < 5; j++)
+            {
+                if (uniqueCards[i + j].cardInfo.cardNumber != uniqueCards[i].cardInfo.cardNumber + j)
+                {
+                    isStraight = false;
+                    break;
+                }
+            }
+            if (isStraight)
+            {
+
+                return true;
+            }
+        }
+
+        // Special case for Ace-low straight (5, 4, 3, 2, Ace)
+        if (uniqueCards.Count >= 5 &&
+            uniqueCards[0].cardInfo.cardNumber == 2 &&
+            uniqueCards[1].cardInfo.cardNumber == 3 &&
+            uniqueCards[2].cardInfo.cardNumber == 4 &&
+            uniqueCards[3].cardInfo.cardNumber == 5 &&
+            uniqueCards.Last().cardInfo.cardNumber == 14)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public List<Card> StraightCards(List<Card> cards)
     {
 
         List<Card> sortedCards = cards.OrderBy(card => card.cardInfo.cardNumber).ToList();
@@ -268,7 +307,8 @@ public class PokerEvaluator : MonoBehaviour
             }
             if (isStraight)
             {
-                return true;
+
+                return uniqueCards ;
             }
         }
 
@@ -280,10 +320,10 @@ public class PokerEvaluator : MonoBehaviour
             uniqueCards[3].cardInfo.cardNumber == 5 &&
             uniqueCards.Last().cardInfo.cardNumber == 14)
         {
-            return true;
+            return uniqueCards;
         }
 
-        return false;
+        return uniqueCards;
     }
 
     bool CheckFlush(List<Card> cards)

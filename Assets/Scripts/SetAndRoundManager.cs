@@ -34,13 +34,13 @@ public class SetAndRoundManager : MonoBehaviour
 
     void UpdateSetCount()
     {
-        setCountText.text = currentSetNumber.ToString();
-        thisSetQuotaText.text = pointsQuota.ToString();
+        setCountText.text = "set - " + currentSetNumber.ToString();
+        thisSetQuotaText.text =pointsQuota.ToString();
     }
 
     void UpdateRoundCount()
     {
-        roundCountText.text = roundCount.ToString();
+        roundCountText.text = "round - " + roundCount.ToString();
     }
 
     public void EndRound()

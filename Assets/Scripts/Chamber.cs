@@ -44,7 +44,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (chamberManager.playerHandManager.playerChosenChamber == null)
+        if (chamberManager.playerHandManager.playerChosenChamber == null && chamberManager.playerHandManager.playersTurn)
         {
            // layerSelectionAura.SetActive(false);
             chamberManager.playerHandManager.SelectPlayerChamber(this);

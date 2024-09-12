@@ -24,6 +24,7 @@ public class CardInfo
 [System.Serializable]
 public class SignWiseCard
 {
+    public bool doNotUse;
     public CardType CardType;
     public Sprite[] sprites;
 }
@@ -53,15 +54,19 @@ public class CardManager : MonoBehaviour
     {
         foreach (var cardDeck in signWiseCards)
         {
-            foreach (var cardSprite in cardDeck.sprites)
+            if (!cardDeck.doNotUse)
             {
-                CardInfo cardInfo = new CardInfo
+
+                foreach (var cardSprite in cardDeck.sprites)
                 {
-                    cardTexture = cardSprite,
-                    CardType = cardDeck.CardType,
-                    cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 2
-                };
-                cardsInDeck.Add(cardInfo);
+                    CardInfo cardInfo = new CardInfo
+                    {
+                        cardTexture = cardSprite,
+                        CardType = cardDeck.CardType,
+                        cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 2
+                    };
+                    cardsInDeck.Add(cardInfo);
+                }
             }
         }
         tempDeck = new List<CardInfo>(cardsInDeck);

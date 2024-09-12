@@ -9,7 +9,7 @@ public class RangerManager : MonoBehaviour
     public List<Transform> availableChips;
     public CardManager cardManager;
     public Chamber rangerSelectedChamber;
-    public PlayerHandManager playerHandManager;
+    public PlayerManager playerHandManager;
     public void SelectRangerChamber(Chamber _selectedChamber)
     {
         rangerSelectedChamber = _selectedChamber;

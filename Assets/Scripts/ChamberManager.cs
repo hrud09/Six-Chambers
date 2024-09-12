@@ -9,7 +9,7 @@ public class ChamberManager : MonoBehaviour
     public List<Chamber> chambers;
     public Chamber rangerChosenChamber;
 
-    public PlayerHandManager playerHandManager;
+    public PlayerManager playerHandManager;
     public RangerManager rangerManager;
 
     public float totalSelectionTime; // Total time for the selection process

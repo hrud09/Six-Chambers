@@ -16,15 +16,18 @@ public class SetAndRoundManager : MonoBehaviour
     public int[] pointsQuotaSet;
 
     public TMP_Text thisSetQuotaText;
-    private int pointsQuota;
-    public PlayerHandManager playerHandManager;
-
-    void Start()
+    public int pointsQuota;
+    public PlayerManager playerHandManager;
+    private void Awake()
     {
+        
         LoadProgress();
         SetPointsQuota();
         UpdateSetCount();
         UpdateRoundCount();
+    }
+    void Start()
+    {
     }
 
     void SetPointsQuota()

@@ -26,7 +26,7 @@ public class PokerEvaluator : MonoBehaviour
     }
     public TMP_Text winText;
     public CardManager cardManager;
-    public PlayerHandManager playerHandManager;
+    public PlayerManager playerHandManager;
     public int[] rankwisePoints;
     public void RevealLastTwoCards()
     {
@@ -126,7 +126,10 @@ public class PokerEvaluator : MonoBehaviour
             winText.text = $"{winningChamber.index} Wins by {winType(highestHandValue)}";
             tiedChambers[0].topRankUI.SetActive(true);
 
-            tiedChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.5f);
+            tiedChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.35f, 0.2f).OnComplete(() => {
+
+                tiedChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.2f);
+            });
             tiedChambers[0].rankText.fontSize = 0.65f;
         }
         else
@@ -139,7 +142,11 @@ public class PokerEvaluator : MonoBehaviour
 
                 winningChambers[0].topRankUI.SetActive(true);
 
-                winningChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.5f);
+           
+                winningChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.35f, 0.2f).OnComplete(() => {
+
+                    winningChambers[0].topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.2f);
+                });
                 winningChambers[0].rankText.fontSize = 0.65f;
                 playerHandManager.CheckSelectedChamber(winningChambers[0], rankwisePoints[highestHandValue - 1]);
                 winText.text = $"{winningChambers[0].index} Wins by Tie-Breaker among Chambers: {tiedChambersIndices} by {winType(highestHandValue)}";

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1988588247668951018}
   - component: {fileID: 8976103076204071457}
   m_Layer: 0
-  m_Name: Chip (4)
+  m_Name: Chip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -15,6 +15,22 @@ public class ChamberManager : MonoBehaviour
     public float totalSelectionTime; // Total time for the selection process
     public float initialDelay; // Initial delay between each selection
 
+    public GameObject chipPrefab;
+
+    private void Start()
+    {
+        foreach (var chamber in chambers)
+        {
+            for (int i = 0; i < chamber.chipsCount; i++)
+            {
+                GameObject _chip = Instantiate(chipPrefab, chamber.chipsParent);
+                chamber.existingChips.Add(_chip);
+                /* _chip.transform.position = chamber.chipsParent*/
+                _chip.transform.localPosition = Vector3.up * i * 0.2f;
+
+            }
+        }
+    }
     public void PickRangersHand()
     {
         StartCoroutine(PickRangerHandCoroutine());
@@ -47,6 +63,15 @@ public class ChamberManager : MonoBehaviour
         rangerChosenChamber = chamberTransforms[currentIndex].GetComponent<Chamber>();
         rangerManager.SelectRangerChamber(rangerChosenChamber);
         // Print the final index
-      
+
+    }
+
+    public void UpdateAllChipsCount()
+    {
+        foreach (var chamber in chambers)
+        {
+            chamber.UpdateChipsCount();
+        }
+
     }
 }

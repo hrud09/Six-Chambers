@@ -23,12 +23,27 @@ public class Chamber : MonoBehaviour
     [Header("Winning Text")]
     public TMP_Text rankText;
 
+
+    [Header("Chips Corner")]
+    public Transform chipsParent;
+    public List<GameObject> existingChips;
+    public GameObject existingChipsCountObject;
+    public TMP_Text existingChipsCountText;
+
+    public List<GameObject> wagerredChips;
+    public Transform wagerredChipsParent;
+
+    public int chipsCount;
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();
-       
+        chipsCount = PlayerPrefs.GetInt($"{index}_ChamberChipsCount", 2);
     }
-
+    IEnumerator Start()
+    {
+        yield return new WaitForEndOfFrame();
+        UpdateChipsCount();
+    }
     public void InitializeOriginalPositions()
     {
         layerSelectionAura = chamberCards[0].playerSelectionAura;
@@ -53,6 +68,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseOver()
     {
+        existingChipsCountObject.SetActive(true);
         if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
         {
             layerSelectionAura.SetActive(true);
@@ -63,6 +79,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseExit()
     {
+        existingChipsCountObject.SetActive(false);
         if(chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
         LowerCards();
@@ -99,5 +116,11 @@ public class Chamber : MonoBehaviour
             tween.Kill();
         }
         cardTweens.Clear();
+    }
+
+    public void UpdateChipsCount()
+    {
+        PlayerPrefs.SetInt($"{index}_ChamberChipsCount", existingChips.Count);
+        existingChipsCountText.text = existingChips.Count.ToString();
     }
 }

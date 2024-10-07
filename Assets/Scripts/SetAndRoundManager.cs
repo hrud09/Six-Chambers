@@ -38,7 +38,7 @@ public class SetAndRoundManager : MonoBehaviour
     void UpdateSetCount()
     {
         setCountText.text = "set - " + currentSetNumber.ToString();
-        thisSetQuotaText.text =pointsQuota.ToString();
+        //thisSetQuotaText.text =pointsQuota.ToString();
     }
 
     void UpdateRoundCount()
@@ -51,19 +51,20 @@ public class SetAndRoundManager : MonoBehaviour
         roundCount++;
 
         playerHandManager.gameManager.nextRoundButton.SetActive(true);
-        if (roundCount >= 6)
+       /* if (roundCount >= 6)
         {
-            if (playerHandManager.currentSetPoint >= pointsQuota)
+          *//*  if (playerHandManager.currentSetPoint >= pointsQuota)
             {
                 PromoteToNextSet();
             }
             else
             {
                 ResetRound();
-            }
+            }*//*
         }
-
+*/
         SaveProgress();
+        Invoke("NextRound", 3);
     }
 
     public void NextRound()
@@ -75,8 +76,8 @@ public class SetAndRoundManager : MonoBehaviour
     {
         currentSetNumber++;
         PlayerPrefs.SetInt("currentSet", currentSetNumber);
-        playerHandManager.currentSetPoint = 0;
-        playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
+       // playerHandManager.currentSetPoint = 0;
+       // playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
         SetPointsQuota();
         roundCount = 0;
         UpdateSetCount();
@@ -86,8 +87,8 @@ public class SetAndRoundManager : MonoBehaviour
     void ResetRound()
     {
         roundCount = 0;
-        playerHandManager.currentSetPoint = 0;
-        playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
+       // playerHandManager.currentSetPoint = 0;
+       // playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
     }
 
     void SaveProgress()
@@ -108,7 +109,7 @@ public class SetAndRoundManager : MonoBehaviour
     {
         currentSetNumber = 1;
         roundCount = 0;
-        playerHandManager.currentSetPoint = 0;
+       // playerHandManager.currentSetPoint = 0;
 
         PlayerPrefs.DeleteKey("currentSet");
         PlayerPrefs.DeleteKey("roundCount");
@@ -118,6 +119,6 @@ public class SetAndRoundManager : MonoBehaviour
         UpdateSetCount();
         UpdateRoundCount();
 
-        playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
+        //playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
     }
 }

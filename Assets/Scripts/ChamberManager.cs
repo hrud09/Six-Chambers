@@ -19,17 +19,7 @@ public class ChamberManager : MonoBehaviour
 
     private void Start()
     {
-        foreach (var chamber in chambers)
-        {
-            for (int i = 0; i < chamber.chipsCount; i++)
-            {
-                GameObject _chip = Instantiate(chipPrefab, chamber.chipsParent);
-                chamber.existingChips.Add(_chip);
-                /* _chip.transform.position = chamber.chipsParent*/
-                _chip.transform.localPosition = Vector3.up * i * 0.2f;
 
-            }
-        }
     }
     public void PickRangersHand()
     {

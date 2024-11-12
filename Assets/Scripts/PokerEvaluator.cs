@@ -1,5 +1,4 @@
 using DG.Tweening;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,18 +25,22 @@ public class PokerEvaluator : MonoBehaviour
     }
     public TMP_Text winText;
     public CardManager cardManager;
+    public BoardManager boardManager;
+    public ChamberManager chamberManager;
     public PlayerManager playerHandManager;
     public int[] rankwisePoints;
+    public PlayerEconomyManager playerEconomyManager;
+    public Chamber winningChamber;
     public void RevealLastTwoCards()
     {
-        for (int i = 0; i < cardManager.boardManager.cardsOnBoard.Count; i++)
+        for (int i = 0; i < boardManager.cardsOnBoard.Count; i++)
         {
             int index = i;
-            Transform card = cardManager.boardManager.cardsOnBoard[i].transform;
+            Transform card = boardManager.cardsOnBoard[i].transform;
 
             card.DOLocalRotate(Vector3.zero, 0.5f).SetDelay(0.2f).OnComplete(() =>
             {
-                if (index == cardManager.boardManager.cardsOnBoard.Count - 1)
+                if (index == boardManager.cardsOnBoard.Count - 1)
                 {
                    StartCoroutine(RevealEveryOnesCards());
                 }
@@ -48,11 +51,11 @@ public class PokerEvaluator : MonoBehaviour
     public IEnumerator RevealEveryOnesCards()
     {
 
-        foreach (var item in cardManager.chamberManager.chambers)
+        foreach (var item in chamberManager.chambers)
         {
             Chamber chamber = item;
             Transform lastCardTransform = chamber.chamberCards[1].transform;
-            int index = cardManager.chamberManager.chambers.IndexOf(item);
+            int index = chamberManager.chambers.IndexOf(item);
             lastCardTransform.DOLocalRotate(Vector3.zero, 0.5f).OnComplete(() =>
             {
                 CheckHand(chamber);
@@ -63,33 +66,65 @@ public class PokerEvaluator : MonoBehaviour
         }
         CheckPokerLogics(); 
     }
+    public void RevealRandomChambersSecondCard()
+    {
 
+        Chamber chamber = chamberManager.chambers[Random.Range(0, chamberManager.chambers.Count)];
+        Transform lastCardTransform = chamber.chamberCards[1].transform;
+        int index = chamberManager.chambers.IndexOf(chamber);
+        lastCardTransform.DOLocalRotate(Vector3.zero, 0.5f);
+
+
+    }
+
+    public void RevealOneCardFromBoard()
+    {
+        for (int i = 0; i < boardManager.cardsOnBoard.Count - 1; i++)
+        {
+            int index = i;
+            Transform card = boardManager.cardsOnBoard[i].transform;
+
+            card.DOLocalRotate(Vector3.zero, 0.5f).SetDelay(0.2f).OnComplete(() =>
+            {
+                if (index == boardManager.cardsOnBoard.Count - 1)
+                {
+                    StartCoroutine(RevealEveryOnesCards());
+                }
+            });
+        }
+    }
     public void CheckHand(Chamber chamber)
     {
-        Chamber selectedChamber = chamber;
-        List<Card> cardsOnBoard = cardManager.boardManager.cards;
+    
+        Chamber _selectedChamber = chamber;
+        List<Card> cardsOnBoard =   boardManager.cards;
         List<Card> all7cardsOnHand = new List<Card>(cardsOnBoard);
-        all7cardsOnHand.AddRange(selectedChamber.chamberCards);
+        all7cardsOnHand.AddRange(_selectedChamber.chamberCards);
 
         HandEvaluation handEvaluation = EvaluateHand(all7cardsOnHand);
-       // selectedChamber.chamberCards = handEvaluation.HighValueCards;
+       // _selectedChamber.chamberCards = handEvaluation.HighValueCards;
         int handValue = handEvaluation.HandValue;
 
 
-        selectedChamber.rankText.enabled = true;
-       // selectedChamber.rankText.fontSize = 0.65f;
-        selectedChamber.rankText.text = winType(handValue);
+        _selectedChamber.rankText.enabled = true;
+       // _selectedChamber.rankText.fontSize = 0.65f;
+        _selectedChamber.rankText.text = winType(handValue);
+        if (chamber == playerHandManager.playerChosenChamber)
+        {
+
+            playerEconomyManager.UpdateCredit(rankwisePoints[handValue - 1]);
+        }
     }
 
     void CheckPokerLogics()
     {
-        List<Card> cardsOnBoard = cardManager.boardManager.cards;
-        Chamber winningChamber = null;
+        List<Card> cardsOnBoard = boardManager.cards;
+        winningChamber = null;
         List<Chamber> winningChambers;
         int highestHandValue = -1;
         List<Chamber> tiedChambers = new List<Chamber>();
 
-        foreach (Transform chamberTransform in cardManager.chamberManager.chamberTransforms)
+        foreach (Transform chamberTransform in chamberManager.chamberTransforms)
         {
             Chamber chamberSelected = chamberTransform.GetComponent<Chamber>();
 
@@ -99,11 +134,6 @@ public class PokerEvaluator : MonoBehaviour
             HandEvaluation handEvaluation = EvaluateHand(chamberCards);
             chamberSelected.chamberCards = handEvaluation.HighValueCards;
             int handValue = handEvaluation.HandValue;
-
-
-         /*   chamberSelected.rankText.enabled = true;
-            chamberSelected.rankText.text = winType(handValue);
-*/
 
             if (handValue > highestHandValue)
             {
@@ -175,7 +205,7 @@ public class PokerEvaluator : MonoBehaviour
                 Debug.LogWarning(
 
                     $"{ch.chamberCards[0].cardInfo.cardNumber},{ch.chamberCards[1].cardInfo.cardNumber},{ch.chamberCards[2].cardInfo.cardNumber}," +
-                    $"{ch.chamberCards[3].cardInfo.cardNumber}, {ch.chamberCards[4].cardInfo.cardNumber}____{cardManager.chamberManager.chambers.IndexOf(ch)}"
+                    $"{ch.chamberCards[3].cardInfo.cardNumber}, {ch.chamberCards[4].cardInfo.cardNumber}____{chamberManager.chambers.IndexOf(ch)}"
 
                     );
 
@@ -300,36 +330,21 @@ public class PokerEvaluator : MonoBehaviour
                                             .Select(group => group.First())
                                             .ToList();
 
-
-        for (int i = 0; i <= uniqueCards.Count - 5; i++)
+     List<Card> _unnecessaryCards = new List<Card>();
+        for (int i = 1; i < uniqueCards.Count; i++)
         {
-            bool isStraight = true;
-            for (int j = 1; j < 5; j++)
+            if (uniqueCards[i - 1].cardInfo.cardNumber + 1 !=  uniqueCards[i].cardInfo.cardNumber)
             {
-                if (uniqueCards[i + j].cardInfo.cardNumber != uniqueCards[i].cardInfo.cardNumber + j)
-                {
-                    isStraight = false;
-                    break;
-                }
-            }
-            if (isStraight)
-            {
-
-                return uniqueCards ;
+                _unnecessaryCards.Add(uniqueCards[i - 1]);
+               
             }
         }
-
-        // Special case for Ace-low straight (5, 4, 3, 2, Ace)
-        if (uniqueCards.Count >= 5 &&
-            uniqueCards[0].cardInfo.cardNumber == 2 &&
-            uniqueCards[1].cardInfo.cardNumber == 3 &&
-            uniqueCards[2].cardInfo.cardNumber == 4 &&
-            uniqueCards[3].cardInfo.cardNumber == 5 &&
-            uniqueCards.Last().cardInfo.cardNumber == 14)
+        foreach (var item in _unnecessaryCards)
         {
-            return uniqueCards;
+            uniqueCards.Remove(item);
         }
-
+      
+        if(uniqueCards.Count > 5) uniqueCards.RemoveRange(0, uniqueCards.Count - 5);
         return uniqueCards;
     }
 
@@ -434,3 +449,4 @@ public class HandEvaluation
     public int HandValue { get; set; }
     public List<Card> HighValueCards { get; set; }
 }
+

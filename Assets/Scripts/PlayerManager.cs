@@ -33,6 +33,8 @@ public class PlayerManager : MonoBehaviour
 
     public int chipsCount;
     public GameObject chipPrefab;
+
+    public PowerManager powerManager;
     private void Start()
     {
         chipsCount = PlayerPrefs.GetInt("PlayerChipsCount", 6);
@@ -44,15 +46,17 @@ public class PlayerManager : MonoBehaviour
         }   
         UpdateChipsCount();
     }
-    public void SelectPlayerChamber(Chamber _choosenChamber)
+    public void SelectPlayerChamber(Chamber _chosenChamber)
     {
+
+        powerManager.ActivatePowerCards(PowerType.MidRound);
         chamberSelected = true;
-        playerChosenChamber = _choosenChamber;
+        playerChosenChamber = _chosenChamber;
         int chipsAmountToWager = 1;
 
-        if (playerChosenChamber.existingChips.Count == 0) chipsAmountToWager = 1;
-        else if (currentChips.Count < playerChosenChamber.existingChips.Count) chipsAmountToWager = currentChips.Count;
-        else if (playerChosenChamber.existingChips.Count > 0 && currentChips.Count > 0) chipsAmountToWager = playerChosenChamber.existingChips.Count;
+        if (_chosenChamber.existingChips.Count == 0) chipsAmountToWager = 1;
+        else if (currentChips.Count < _chosenChamber.existingChips.Count) chipsAmountToWager = currentChips.Count;
+        else if (_chosenChamber.existingChips.Count > 0 && currentChips.Count > 0) chipsAmountToWager = _chosenChamber.existingChips.Count;
 
         //Player hand
         for (int i = chipsAmountToWager - 1; i >= 0 ; i--)
@@ -60,22 +64,22 @@ public class PlayerManager : MonoBehaviour
             Transform t = currentChips[i].transform;
             wagerredChips.Add(currentChips[i]);
             currentChips.Remove(currentChips[i]);
-            t.parent = playerChosenChamber.wagerredChipsParent;
+            t.parent = _chosenChamber.wagerredChipsParent;
             t.DOLocalJump(Vector3.up * i * 0.2f, 2, 1, 0.5f).SetDelay(i * 0.3f);
         }
 
         //Chamber hand
-        if (playerChosenChamber.existingChips.Count > 0)
+        if (_chosenChamber.existingChips.Count > 0)
         {
-            /*  GameObject _chip = Instantiate(playerChosenChamber.chamberManager.chipPrefab, playerChosenChamber.chipsParent.position, Quaternion.identity);
-              playerChosenChamber.existingChips.Add(_chip);*/
+            /*  GameObject _chip = Instantiate(_chosenChamber.chamberManager.chipPrefab, _chosenChamber.chipsParent.position, Quaternion.identity);
+              _chosenChamber.existingChips.Add(_chip);*/
             for (int i = chipsAmountToWager - 1; i >= 0; i --)
             {
-                Transform t = playerChosenChamber.existingChips[i].transform;
-                wagerredChips.Add(playerChosenChamber.existingChips[i]);
-                playerChosenChamber.existingChips.Remove(playerChosenChamber.existingChips[i]);
+                Transform t = _chosenChamber.existingChips[i].transform;
+                wagerredChips.Add(_chosenChamber.existingChips[i]);
+                _chosenChamber.existingChips.Remove(_chosenChamber.existingChips[i]);
                 t.DOLocalJump(Vector3.up * i * 0.2f, 2, 1, 0.5f).SetDelay(i * 0.3f + 0.5f);
-                t.parent = playerChosenChamber.wagerredChipsParent;
+                t.parent = _chosenChamber.wagerredChipsParent;
             }
         }
         UpdateChipsCount();
@@ -275,9 +279,6 @@ public class PlayerManager : MonoBehaviour
             }
         }
 
-        // PlayerPrefs.SetInt("PlayerPoint", currentSetPoint);
-        // pointText.text = currentSetPoint.ToString();
-
         UpdateChipsCount();
         playerChosenChamber.chamberManager.UpdateAllChipsCount();
         wagerredChips.Clear();
@@ -293,43 +294,38 @@ public class PlayerManager : MonoBehaviour
     }
     public void CheckSelectedChamber(List<Chamber> winningChambers, int point)
     {
-        print("Here Many");
-        if (playerChosenChamber != chamberManager.rangerChosenChamber)
+        if (wagerredChips.Count == 1)
         {
-            if (winningChambers.Contains(playerChosenChamber))
-            {
+            Transform t = wagerredChips[0].transform;
+            t.parent = chipsParent;
+            t.DOLocalJump(Vector3.zero, 5, 1, 1.5f);
+            currentChips.Add(wagerredChips[0]);
 
-             //   currentSetPoint += point;
+        }
+        else
+        {
 
-            }
-            else if (winningChambers.Contains(chamberManager.rangerChosenChamber))
+            for (int i = 0; i < wagerredChips.Count; i++)
             {
-              //  currentSetPoint -= point;
-            }
-            else if (winningChambers.Contains(playerChosenChamber) && winningChambers.Contains(chamberManager.rangerChosenChamber))
-            {
-             //   currentSetPoint += 3 * point;
-            }
-            else
-            {
-                //Nothing
+                Transform _chipTransform = wagerredChips[i].transform;
+                if (i % 2 == 0)
+                {
+                    _chipTransform.parent = playerChosenChamber.chipsParent;
+                    _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(wagerredChips[i]) * 0.1f);
+                    playerChosenChamber.existingChips.Add(_chipTransform.gameObject);
+                }
+                else
+                {
+
+                    _chipTransform.parent = chipsParent;
+                    _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(wagerredChips[i]) * 0.1f);
+                    currentChips.Add(wagerredChips[i]);
+
+                }
+
             }
         }
-        else if (playerChosenChamber == chamberManager.rangerChosenChamber)
-        {
-            if (winningChambers.Contains(chamberManager.rangerChosenChamber))
-            {
-               // currentSetPoint -= point;
-            }
 
-            else
-            {
-                //Nothing
-            }
-        }
-      //  PlayerPrefs.SetInt("PlayerPoint", currentSetPoint);
-       // pointFill.fillAmount = (currentSetPoint / setAndRoundManager.pointsQuota);
-       // pointText.text = currentSetPoint.ToString();
         setAndRoundManager.EndRound();
     }
 }

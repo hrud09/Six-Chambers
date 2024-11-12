@@ -50,7 +50,7 @@ public class SetAndRoundManager : MonoBehaviour
     {
         roundCount++;
 
-        playerHandManager.gameManager.nextRoundButton.SetActive(true);
+       // playerHandManager.gameManager.nextRoundButton.SetActive(true);
        /* if (roundCount >= 6)
         {
           *//*  if (playerHandManager.currentSetPoint >= pointsQuota)
@@ -64,7 +64,7 @@ public class SetAndRoundManager : MonoBehaviour
         }
 */
         SaveProgress();
-        Invoke("NextRound", 3);
+        Invoke("NextRound", 4);
     }
 
     public void NextRound()

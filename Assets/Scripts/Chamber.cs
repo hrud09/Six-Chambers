@@ -27,7 +27,7 @@ public class Chamber : MonoBehaviour
     [Header("Chips Corner")]
     public Transform chipsParent;
     public List<GameObject> existingChips;
-    public GameObject existingChipsCountObject;
+   // public GameObject existingChipsCountObject;
     public TMP_Text existingChipsCountText;
 
     public List<GameObject> wagerredChips;
@@ -38,6 +38,22 @@ public class Chamber : MonoBehaviour
     {
         chamberManager = GetComponentInParent<ChamberManager>();
         chipsCount = PlayerPrefs.GetInt($"{index}_ChamberChipsCount", 2);
+        for (int i = 0; i < chipsCount; i++)
+        {
+            GameObject _chip = Instantiate(chamberManager.chipPrefab, chipsParent);
+            _chip.transform.localPosition = Vector3.back * 5;
+            _chip.transform.localScale = Vector3.zero;
+            _chip.transform.DOScale(Vector3.one, 0.3f).OnComplete(() =>
+            {
+
+
+                _chip.transform.DOLocalJump(Vector3.up * i * 0.2f, 2, 1, 0.5f);
+
+            });
+            existingChips.Add(_chip);
+            /* _chip.transform.position = chamber.chipsParent*/
+
+        }
     }
     IEnumerator Start()
     {
@@ -68,7 +84,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseOver()
     {
-        existingChipsCountObject.SetActive(true);
+       // existingChipsCountObject.SetActive(true);
         if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
         {
             layerSelectionAura.SetActive(true);
@@ -79,7 +95,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseExit()
     {
-        existingChipsCountObject.SetActive(false);
+       // existingChipsCountObject.SetActive(false);
         if(chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
         LowerCards();

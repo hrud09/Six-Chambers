@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;  // To restart the scene
 public class GameManager : MonoBehaviour
 {
     private bool isPaused = false;
-    public GameObject nextRoundButton;
     public SetAndRoundManager setAndRoundManager;
     public PlayerManager playerHandManager;
     // Start is called before the first frame update
@@ -48,6 +47,7 @@ public class GameManager : MonoBehaviour
     public void RestartGame()
     {
         setAndRoundManager.ResetAll();
+        PlayerPrefs.DeleteAll();
         PlayerPrefs.SetInt("PlayerPoint", setAndRoundManager.pointsQuota);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }

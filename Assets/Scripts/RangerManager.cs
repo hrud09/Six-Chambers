@@ -7,6 +7,7 @@ public class RangerManager : MonoBehaviour
 {
     public int chipsCount;
     public List<Transform> availableChips;
+    public PokerEvaluator pokerEvaluator;
     public CardManager cardManager;
     public Chamber rangerSelectedChamber;
     public PlayerManager playerHandManager;
@@ -15,7 +16,7 @@ public class RangerManager : MonoBehaviour
         rangerSelectedChamber = _selectedChamber;
         rangerSelectedChamber.chamberCards[0].playerSelectionAura.SetActive(false);
         rangerSelectedChamber.chamberCards[0].rangerSelectionAura.SetActive(true);
-        cardManager.pokerEvaluator.RevealLastTwoCards();
+        pokerEvaluator.CallForRevealAction();
         if (playerHandManager.playerChosenChamber == rangerSelectedChamber)
         {
            // playerHandManager.chooseAgainPopUp.SetActive(true);

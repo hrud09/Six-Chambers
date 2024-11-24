@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PokerEvaluator : MonoBehaviour
 {
@@ -31,8 +32,60 @@ public class PokerEvaluator : MonoBehaviour
     public int[] rankwisePoints;
     public PlayerEconomyManager playerEconomyManager;
     public Chamber winningChamber;
-    public void RevealLastTwoCards()
+
+    [Header("RevealSection")]
+    public CanvasGroup revealCanvasGroup;
+    public bool autoReveal;
+    public Button revealButton;
+    public TMP_Text revealText;
+    public RectTransform autoTextRect;
+    public Toggle autoRevealToggle;
+    #region Reveal Area
+    private void Start()
     {
+        revealCanvasGroup.interactable = true;
+        autoRevealToggle.isOn = autoReveal;
+    }
+    public void ToggleAutoReveal()
+    {
+        autoReveal = !autoReveal;
+        if (autoReveal)
+        {
+            autoTextRect.DOScale(Vector3.one * 1.3f, 0.2f);
+            revealButton.enabled = false;
+            revealText.color = Color.gray;
+        }
+        else {
+
+            autoTextRect.DOScale(Vector3.one, 0.1f);
+            revealButton.enabled = true;
+            revealText.color = Color.white;
+           
+        }
+
+    }
+    public void RevealCards()
+    {
+        RevealBoardCards();
+    }
+    public void CallForRevealAction()
+    {
+        if (autoReveal)
+        {
+            RevealBoardCards();
+            revealButton.enabled = false;
+            revealText.color = Color.gray;
+        }
+        else
+        {
+            revealButton.enabled = true;
+            revealText.color = Color.green;
+        }
+    }
+
+    private void RevealBoardCards()
+    {
+        revealCanvasGroup.interactable = false;
         for (int i = 0; i < boardManager.cardsOnBoard.Count; i++)
         {
             int index = i;
@@ -42,15 +95,15 @@ public class PokerEvaluator : MonoBehaviour
             {
                 if (index == boardManager.cardsOnBoard.Count - 1)
                 {
-                   StartCoroutine(RevealEveryOnesCards());
+                    StartCoroutine(RevealHandCards());
                 }
             });
         }
     }
+  
 
-    public IEnumerator RevealEveryOnesCards()
-    {
-
+    private IEnumerator RevealHandCards()
+    {      
         foreach (var item in chamberManager.chambers)
         {
             Chamber chamber = item;
@@ -64,8 +117,10 @@ public class PokerEvaluator : MonoBehaviour
 
             yield return new WaitForSeconds(0.5f);
         }
-        CheckPokerLogics(); 
+        CheckPokerLogics();
+        
     }
+    
     public void RevealRandomChambersSecondCard()
     {
 
@@ -76,7 +131,7 @@ public class PokerEvaluator : MonoBehaviour
 
 
     }
-
+    #endregion
     public void RevealOneCardFromBoard()
     {
         for (int i = 0; i < boardManager.cardsOnBoard.Count - 1; i++)
@@ -88,7 +143,7 @@ public class PokerEvaluator : MonoBehaviour
             {
                 if (index == boardManager.cardsOnBoard.Count - 1)
                 {
-                    StartCoroutine(RevealEveryOnesCards());
+                    CallForRevealAction();
                 }
             });
         }

@@ -27,7 +27,7 @@ public class ArrangeChildrenInCircle : MonoBehaviour
             float angle = fromAngle + i * angleStep;
             Vector3 positionOffset = Quaternion.Euler(0f, angle, 0f) * Vector3.forward * radius;
             transform.GetChild(i).position = transform.position + positionOffset;
-           transform.GetChild(i).forward = transform.GetChild(i).position - transform.position;
+            transform.GetChild(i).forward = transform.GetChild(i).position - transform.position;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Linq;
 
 public enum CardType
 {
-    Clove,
+    Clubs,
     Heart,
     Dice,
     Spade

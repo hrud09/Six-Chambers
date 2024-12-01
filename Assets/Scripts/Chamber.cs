@@ -3,63 +3,46 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using TMPro;
+using System;
 
 public class Chamber : MonoBehaviour
 {
-    public ChamberManager chamberManager;
-    public List<Card> chamberCards;
-    public int index;
+    // Core Dependencies
+    public int chamberIndex;
+    private ChamberManager chamberManager;
+    public ChamberUIScript chamberUI;
 
+    // Cards
+    [Header("Cards")]
+    public List<Card> chamberCards, chamberRankCards;
     public Transform cardParent;
     public Transform[] bestCardsHolders;
-
-    [SerializeField]
     private Vector3[] originalPositions;
     private List<Tween> cardTweens = new List<Tween>();
     public GameObject layerSelectionAura;
     public GameObject topRankUI;
 
+    // Chips System
+    [Header("Chips System")]
+    public int initialChipsCount, currentChipsCount;
 
-    [Header("Winning Text")]
-    public TMP_Text rankText;
-
-
-    [Header("Chips Corner")]
-    public Transform chipsParent;
-    public List<GameObject> existingChips;
-   // public GameObject existingChipsCountObject;
-    public TMP_Text existingChipsCountText;
-
-    public List<GameObject> wagerredChips;
-    public Transform wagerredChipsParent;
-
-    public int chipsCount;
     private void Awake()
     {
+       
         chamberManager = GetComponentInParent<ChamberManager>();
-        chipsCount = PlayerPrefs.GetInt($"{index}_ChamberChipsCount", 2);
-        for (int i = 0; i < chipsCount; i++)
-        {
-            GameObject _chip = Instantiate(chamberManager.chipPrefab, chipsParent);
-            _chip.transform.localPosition = Vector3.back * 5;
-            _chip.transform.localScale = Vector3.zero;
-            _chip.transform.DOScale(Vector3.one, 0.3f).OnComplete(() =>
-            {
-
-
-                _chip.transform.DOLocalJump(Vector3.up * i * 0.2f, 2, 1, 0.5f);
-
-            });
-            existingChips.Add(_chip);
-            /* _chip.transform.position = chamber.chipsParent*/
-
-        }
     }
-    IEnumerator Start()
+
+    void Start()
     {
-        yield return new WaitForEndOfFrame();
+      //  yield return new WaitForEndOfFrame();
+        currentChipsCount = PlayerPrefs.GetInt($"{chamberIndex}_ChamberChipsCount", initialChipsCount);
+
+
         UpdateChipsCount();
     }
+
+    // Card Positioning
+    
     public void InitializeOriginalPositions()
     {
         layerSelectionAura = chamberCards[0].playerSelectionAura;
@@ -73,18 +56,18 @@ public class Chamber : MonoBehaviour
         }
     }
 
+    // Mouse Events
+    
     private void OnMouseDown()
     {
         if (chamberManager.playerHandManager.playerChosenChamber == null && chamberManager.playerHandManager.playersTurn)
         {
-           // layerSelectionAura.SetActive(false);
             chamberManager.playerHandManager.SelectPlayerChamber(this);
         }
     }
 
     private void OnMouseOver()
     {
-       // existingChipsCountObject.SetActive(true);
         if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
         {
             layerSelectionAura.SetActive(true);
@@ -95,12 +78,12 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseExit()
     {
-       // existingChipsCountObject.SetActive(false);
-        if(chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
+        if (chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
         LowerCards();
     }
 
+    // Card Lift/Lower
     private void LiftCards()
     {
         KillCardTweens();
@@ -134,9 +117,28 @@ public class Chamber : MonoBehaviour
         cardTweens.Clear();
     }
 
+    // Chips Count Update
     public void UpdateChipsCount()
     {
-        PlayerPrefs.SetInt($"{index}_ChamberChipsCount", existingChips.Count);
-        existingChipsCountText.text = existingChips.Count.ToString();
+       
+        PlayerPrefs.SetInt($"{chamberIndex}_ChamberChipsCount", currentChipsCount);
+        chamberUI.chipsCountText.text = currentChipsCount.ToString();
+    }
+
+    public void UpdateChipsChangeText(int changeAmount, Color textColor)
+    {
+        chamberUI.changeAmountParent.SetActive(true);
+        chamberUI.chipChangeAmountText.DOFade(1, 1f);
+        if (textColor != Color.yellow)
+        {
+            if (changeAmount > 0) chamberUI.chipChangeAmountText.text = "+" + changeAmount.ToString();
+            else chamberUI.chipChangeAmountText.text = changeAmount.ToString();
+        }
+        else
+        {
+            if (changeAmount < 0) chamberUI.chipChangeAmountText.text = (MathF.Abs(changeAmount)).ToString();
+            else chamberUI.chipChangeAmountText.text = changeAmount.ToString();
+        }
+        chamberUI.chipChangeAmountText.color = textColor;
     }
 }

@@ -17,8 +17,17 @@ public class ChamberManager : MonoBehaviour
 
     public GameObject chipPrefab;
 
-    private void Start()
+    private void Awake()
     {
+        InitiateChambers();
+    }
+    public void InitiateChambers()
+    {
+        foreach (var chamber in chambers)
+        {
+            chamber.chamberIndex = chambers.IndexOf(chamber) + 1;
+          
+        }
 
     }
     public void PickRangersHand()
@@ -43,7 +52,7 @@ public class ChamberManager : MonoBehaviour
             float delay = initialDelay * (1 + (elapsedTime / totalSelectionTime));
             rangerChosenChamber.chamberCards[0].transform.DOScale(Vector3.one, delay);
             yield return new WaitForSeconds(delay);
-            // Move to the next index
+            // Move to the next chamberIndex
             currentIndex = (currentIndex + 1) % totalChambers;
             elapsedTime += delay;
             //rangerChosenChamber.chamberCards[0].rangerSelectionAura.SetActive(false);
@@ -52,16 +61,9 @@ public class ChamberManager : MonoBehaviour
         // Final selection
         rangerChosenChamber = chamberTransforms[currentIndex].GetComponent<Chamber>();
         rangerManager.SelectRangerChamber(rangerChosenChamber);
-        // Print the final index
+        // Print the final chamberIndex
 
     }
 
-    public void UpdateAllChipsCount()
-    {
-        foreach (var chamber in chambers)
-        {
-            chamber.UpdateChipsCount();
-        }
-
-    }
+   
 }

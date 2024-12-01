@@ -37,13 +37,13 @@ public class SetAndRoundManager : MonoBehaviour
 
     void UpdateSetCount()
     {
-        setCountText.text = "set - " + currentSetNumber.ToString();
+        setCountText.text = currentSetNumber.ToString();
         //thisSetQuotaText.text =pointsQuota.ToString();
     }
 
     void UpdateRoundCount()
     {
-        roundCountText.text = "round - " + roundCount.ToString();
+        roundCountText.text = roundCount.ToString();
     }
 
     public void EndRound()
@@ -64,7 +64,7 @@ public class SetAndRoundManager : MonoBehaviour
         }
 */
         SaveProgress();
-        Invoke("NextRound", 4);
+        Invoke("NextRound", 10);
     }
 
     public void NextRound()

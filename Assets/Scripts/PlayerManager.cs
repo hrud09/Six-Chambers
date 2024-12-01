@@ -1,331 +1,193 @@
 using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.UI;
-
 
 public class PlayerManager : MonoBehaviour
 {
     public ChamberManager chamberManager;
- 
-    public bool mouseOverChambers;
     public Chamber playerChosenChamber;
 
-    Vector3 targetPosition;
     public bool chamberSelected;
     public bool playersTurn;
-
 
     public GameObject chooseAgainPopUp;
     public SetAndRoundManager setAndRoundManager;
     public GameManager gameManager;
 
-
     [Header("Chips System")]
-    public Transform chipsParent;
+    public TMP_Text potChipsText;
     public TMP_Text currentChipsCountText;
-    public List<GameObject> currentChips;
-
-    public List<GameObject> wagerredChips;
 
     public int chipsCount;
-    public GameObject chipPrefab;
-
+    public int wageredChipsCount; // Variable to store wagered chips count
     public PowerManager powerManager;
+    public bool mouseOverChambers;
+
+
+    public TMP_Text playerChipsChangeCountText;
     private void Start()
     {
         chipsCount = PlayerPrefs.GetInt("PlayerChipsCount", 6);
-        for (int i = 0; i < chipsCount; i++)
-        {
-            GameObject chip = Instantiate(chipPrefab, chipsParent);
-            chip.transform.localPosition = Vector3.up * i * 0.2f;
-            currentChips.Add(chip);
-        }   
         UpdateChipsCount();
     }
+
     public void SelectPlayerChamber(Chamber _chosenChamber)
     {
-
         powerManager.ActivatePowerCards(PowerType.MidRound);
         chamberSelected = true;
         playerChosenChamber = _chosenChamber;
-        int chipsAmountToWager = 1;
 
-        if (_chosenChamber.existingChips.Count == 0) chipsAmountToWager = 1;
-        else if (currentChips.Count < _chosenChamber.existingChips.Count) chipsAmountToWager = currentChips.Count;
-        else if (_chosenChamber.existingChips.Count > 0 && currentChips.Count > 0) chipsAmountToWager = _chosenChamber.existingChips.Count;
+        wageredChipsCount = CalculateChipsAmountToWager(_chosenChamber); // Update wagered chips
+        chipsCount -= wageredChipsCount;
 
-        //Player hand
-        for (int i = chipsAmountToWager - 1; i >= 0 ; i--)
+        if (wageredChipsCount > 1)
         {
-            Transform t = currentChips[i].transform;
-            wagerredChips.Add(currentChips[i]);
-            currentChips.Remove(currentChips[i]);
-            t.parent = _chosenChamber.wagerredChipsParent;
-            t.DOLocalJump(Vector3.up * i * 0.2f, 2, 1, 0.5f).SetDelay(i * 0.3f);
+          //  _chosenChamber.currentChipsCount -= wageredChipsCount;
+            _chosenChamber.UpdateChipsChangeText(-wageredChipsCount, Color.yellow);
         }
 
-        //Chamber hand
-        if (_chosenChamber.existingChips.Count > 0)
-        {
-            /*  GameObject _chip = Instantiate(_chosenChamber.chamberManager.chipPrefab, _chosenChamber.chipsParent.position, Quaternion.identity);
-              _chosenChamber.existingChips.Add(_chip);*/
-            for (int i = chipsAmountToWager - 1; i >= 0; i --)
-            {
-                Transform t = _chosenChamber.existingChips[i].transform;
-                wagerredChips.Add(_chosenChamber.existingChips[i]);
-                _chosenChamber.existingChips.Remove(_chosenChamber.existingChips[i]);
-                t.DOLocalJump(Vector3.up * i * 0.2f, 2, 1, 0.5f).SetDelay(i * 0.3f + 0.5f);
-                t.parent = _chosenChamber.wagerredChipsParent;
-            }
-        }
+        _chosenChamber.UpdateChipsCount();
         UpdateChipsCount();
         chamberManager.PickRangersHand();
     }
 
+    private int CalculateChipsAmountToWager(Chamber _chosenChamber)
+    {
+        if (_chosenChamber.currentChipsCount == 0) return 1;
+        return Mathf.Min(2, _chosenChamber.currentChipsCount);
+    }
+
     public void CheckSelectedChamber(Chamber winningChamber, int point)
     {
-        if (playerChosenChamber != chamberManager.rangerChosenChamber)
+        if (playerChosenChamber == chamberManager.rangerChosenChamber) // Live Chamber case
         {
-            if (playerChosenChamber == winningChamber)
-            {
-                foreach (var chip in wagerredChips)
-                {
-                    Transform _chipTransform = chip.transform;
-                    _chipTransform.parent = chipsParent;
-                    _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1.5f);
-                    if (!currentChips.Contains(chip)) currentChips.Add(chip);
-
-                }
-
-
-            }
-            else if (chamberManager.rangerChosenChamber == winningChamber)
-            {
-                // If the Live Chamber wins, but it's not the player's chosen chamber, the player loses one chip from their personal stash.
-                if (wagerredChips.Count == 1)
-                {
-                    if (currentChips.Count > 0)
-                    {
-                        wagerredChips.Add(currentChips[currentChips.Count - 1]);
-                        currentChips.Remove(currentChips[currentChips.Count - 1]);
-                        foreach (var chip in wagerredChips)
-                        {
-                            Transform _chipTransform = chip.transform;
-                            _chipTransform.parent = winningChamber.chipsParent;
-                            _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1.5f).SetDelay(wagerredChips.IndexOf(chip) * 0.1f);
-                            winningChamber.existingChips.Add(chip);
-                        }
-                    }
-                    else
-                    {
-                        //Lose
-                        print("You Lost!");
-                        return;
-                    }
-                }
-                else if (currentChips.Count == 0)
-                {
-
-                    //Loses
-                    print("You Lost!");
-                    return;
-                }
-                else if(currentChips.Count > 0)
-                {
-                    wagerredChips.Add(currentChips[currentChips.Count - 1]);
-                    currentChips.Remove(currentChips[currentChips.Count - 1]);
-                    for (int i = 0; i < wagerredChips.Count; i++)
-                    {
-                        GameObject _chip = wagerredChips[i];
-                        if (i < wagerredChips.Count/2)
-                        {
-                            _chip.transform.parent = playerChosenChamber.chipsParent;
-                            playerChosenChamber.existingChips.Add(_chip);
-                            _chip.transform.DOLocalJump(Vector3.zero, 5, 1, 1.5f).SetDelay(i * 0.1f);
-                        }
-                        else
-                        {
-                            _chip.transform.parent = winningChamber.chipsParent;
-                            winningChamber.existingChips.Add(_chip);
-                            _chip.transform.DOLocalJump(Vector3.zero, 5, 1, 1.5f).SetDelay(i * 0.1f);
-                        }
-                    }
-                }
-              
-            }
-            else
-            {
-                //player's hand doesn't win, different hand wins
-                if (wagerredChips.Count == 1)
-                {
-                    Transform t = wagerredChips[0].transform;
-                    t.parent = winningChamber.chipsParent;
-                    t.DOLocalJump(Vector3.zero, 5, 1, 1.5f);
-                    winningChamber.existingChips.Add(wagerredChips[0]);
-                   
-                }
-                else
-                {
-
-                    for (int i = 0; i < wagerredChips.Count; i++)
-                    {
-                        Transform _chipTransform = wagerredChips[i].transform;
-                        if (i % 2 == 0)
-                        {
-                            _chipTransform.parent = playerChosenChamber.chipsParent;
-                            _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(wagerredChips[i]) * 0.1f);
-                            playerChosenChamber.existingChips.Add(_chipTransform.gameObject);
-                        }
-                        else
-                        {
-
-                            _chipTransform.parent = winningChamber.chipsParent;
-                            _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(wagerredChips[i]) * 0.1f);
-                            winningChamber.existingChips.Add(wagerredChips[i]);
-                           
-                        }
-
-                    }
-                }
-            }
-        }
-        else if (playerChosenChamber == chamberManager.rangerChosenChamber)
-        {
-            if (winningChamber == playerChosenChamber)
-            {
-                //If the Live Chamber is the chosen chamber and wins, the player loses three chips from their stash as an additional penalty for the increased risk.
-
-                if (wagerredChips.Count == 1)
-                {
-                    if (currentChips.Count >= 3)
-                    {
-                        for (int i = currentChips.Count - 1; i >= currentChips.Count - 3; i--)
-                        { 
-                            wagerredChips.Add(currentChips[i]);
-                            currentChips.Remove(currentChips[i]);
-                        }
-                        foreach (var chip in wagerredChips)
-                        {
-                            Transform _chipTransform = chip.transform;
-                            _chipTransform.parent = winningChamber.chipsParent;
-                            _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(chip) * 0.1f);
-                            winningChamber.existingChips.Add(chip);
-                        }
-                    }
-                    else
-                    {
-                        //Lose
-                        print("You Lost!");
-                        return;
-                    }
-                }
-                else if (currentChips.Count == 0)
-                {
-
-                    //Loses
-                    print("You Lost!");
-                    return;
-                }
-                else if (currentChips.Count >= 3)
-                {
-                    for (int i = currentChips.Count - 1; i >= currentChips.Count - 3; i--)
-                    {
-                        wagerredChips.Add(currentChips[i]);
-                        currentChips.Remove(currentChips[i]);
-                    }
-                    for (int i = 0; i < wagerredChips.Count; i++)
-                    {
-                        GameObject _chip = wagerredChips[i];
-                        if (i < wagerredChips.Count / 2)
-                        {
-                            _chip.transform.parent = playerChosenChamber.chipsParent;
-                            playerChosenChamber.existingChips.Add(_chip);
-                            _chip.transform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(i * 0.1f);
-                        }
-                        else
-                        {
-                            _chip.transform.parent = winningChamber.chipsParent;
-                            winningChamber.existingChips.Add(_chip);
-                            _chip.transform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(i * 0.1f);
-                        }
-                    }
-                }
-            }
-            else if (winningChamber != playerChosenChamber)
-            {
-                // if the Live Chamber loses and it was the player's chosen chamber, the player is rewarded with one chip from every other chamber, in addition to the chips they wagered on that chamber.
-                foreach (var chamber in playerChosenChamber.chamberManager.chambers)
-                {
-
-                    if (chamber.existingChips.Count > 0)
-                    {
-                        GameObject chip = chamber.existingChips[chamber.existingChips.Count - 1];
-                        wagerredChips.Add(chip);
-                        chamber.existingChips.Remove(chip);
-                    }
-                }
-                for (int i = 0; i < wagerredChips.Count; i++) {
-
-                    GameObject chip = wagerredChips[i];
-                    chip.transform.parent = chipsParent;
-                    chip.transform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(i * 0.1f);
-                }
-
-                        
-            }
-        }
-
-        UpdateChipsCount();
-        playerChosenChamber.chamberManager.UpdateAllChipsCount();
-        wagerredChips.Clear();
-        setAndRoundManager.EndRound();
-
-    }
-
-    private void UpdateChipsCount()
-    {
-        chipsCount = currentChips.Count;
-        PlayerPrefs.SetInt("PlayerChipsCount", chipsCount);
-        currentChipsCountText.text = currentChips.Count.ToString();
-    }
-    public void CheckSelectedChamber(List<Chamber> winningChambers, int point)
-    {
-        if (wagerredChips.Count == 1)
-        {
-            Transform t = wagerredChips[0].transform;
-            t.parent = chipsParent;
-            t.DOLocalJump(Vector3.zero, 5, 1, 1.5f);
-            currentChips.Add(wagerredChips[0]);
-
+            HandleLiveChamber(winningChamber);
         }
         else
         {
+            HandlePlayerChosen(winningChamber);
+        }
 
-            for (int i = 0; i < wagerredChips.Count; i++)
-            {
-                Transform _chipTransform = wagerredChips[i].transform;
-                if (i % 2 == 0)
-                {
-                    _chipTransform.parent = playerChosenChamber.chipsParent;
-                    _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(wagerredChips[i]) * 0.1f);
-                    playerChosenChamber.existingChips.Add(_chipTransform.gameObject);
-                }
-                else
-                {
+        UpdateChipsCount();
+        setAndRoundManager.EndRound();
+    }
 
-                    _chipTransform.parent = chipsParent;
-                    _chipTransform.DOLocalJump(Vector3.zero, 5, 1, 1f).SetDelay(wagerredChips.IndexOf(wagerredChips[i]) * 0.1f);
-                    currentChips.Add(wagerredChips[i]);
+    private void HandlePlayerChosen(Chamber winningChamber)
+    {
+        if (playerChosenChamber == winningChamber)
+        {
+            chipsCount += wageredChipsCount * 2;
+            winningChamber.currentChipsCount -= wageredChipsCount;
+            winningChamber.UpdateChipsChangeText(-wageredChipsCount, Color.red);
+        }
+        else if (chamberManager.rangerChosenChamber == winningChamber)
+        {
+            chipsCount -= (1);
 
-                }
+            winningChamber.currentChipsCount += (1 + wageredChipsCount);
+            winningChamber.UpdateChipsChangeText(+(1 + wageredChipsCount), Color.green);
+            winningChamber.UpdateChipsCount();
 
+           // playerChosenChamber.currentChipsCount += wageredChipsCount;
+            playerChosenChamber.UpdateChipsChangeText(+wageredChipsCount, Color.yellow);
+            playerChosenChamber.UpdateChipsCount();
+        }
+        else
+        {
+            playerChosenChamber.UpdateChipsChangeText(+wageredChipsCount, Color.yellow);
+            //playerChosenChamber.currentChipsCount += wageredChipsCount;
+            DistributeChipsToWinningChamber(winningChamber, wageredChipsCount);
+        }
+        winningChamber.UpdateChipsCount();
+        playerChosenChamber.UpdateChipsCount();
+    }
+
+    private void HandleLiveChamber(Chamber winningChamber)
+    {
+        if (winningChamber == playerChosenChamber)
+        {
+            chipsCount -= (3);
+            winningChamber.currentChipsCount += (3);
+            winningChamber.UpdateChipsChangeText(+(3), Color.green);
+            winningChamber.UpdateChipsCount();
+        }
+        else
+        {
+            chipsCount += wageredChipsCount;
+            //playerChosenChamber.currentChipsCount += wageredChipsCount;
+            playerChosenChamber.UpdateChipsChangeText(wageredChipsCount, Color.yellow);
+            playerChosenChamber.UpdateChipsCount();
+            foreach (var chamber in chamberManager.chambers)
+            {/*
+                if (chamber != playerChosenChamber && chamber != chamberManager.rangerChosenChamber)
+                {*/
+                    int cCount = Mathf.Min(1, chamber.currentChipsCount);
+                    if (cCount > 0)
+                    {
+                        chipsCount += cCount;
+                        chamber.currentChipsCount -= cCount;
+                        chamber.UpdateChipsChangeText(-cCount, Color.red);
+                        chamber.UpdateChipsCount();
+                    }
+                    
+               // }
             }
         }
 
-        setAndRoundManager.EndRound();
+       
     }
+
+    private void DistributeChipsToWinningChamber(Chamber winningChamber, int chipsToAdd)
+    {
+        if (winningChamber != null)
+        {
+            winningChamber.currentChipsCount += chipsToAdd;
+            winningChamber.UpdateChipsChangeText(+chipsToAdd, Color.green);
+            Debug.Log($"Chips added to winning chamber: {winningChamber.name}");
+        }
+    }
+
+   private int lastChipsCount; // Track previous chips count for comparison
+
+    private void UpdateChipsCount(bool chipsForBoard = false)
+    {
+        int change = chipsCount - lastChipsCount; // Calculate the change in chips count
+        lastChipsCount = chipsCount; // Update the last chips count
+
+        // Update PlayerPrefs and current chips count text
+        PlayerPrefs.SetInt("PlayerChipsCount", chipsCount);
+        chamberManager.InitiateChambers();
+        currentChipsCountText.text = chipsCount.ToString();
+
+        // Skip if no change
+        if (change == 0) return;
+
+        // Kill previous tweens for playerChipsChangeCountText
+        playerChipsChangeCountText.DOKill();
+
+        // Update and display the change text
+        playerChipsChangeCountText.text = change > 0 ? $"+{change}" : $"{change}";
+        playerChipsChangeCountText.color = change > 0 ? Color.green : Color.red;
+        if (chipsForBoard) playerChipsChangeCountText.color = Color.yellow;
+
+        playerChipsChangeCountText.gameObject.SetActive(true); // Activate the text
+        playerChipsChangeCountText.DOFade(0, 0).OnComplete(() =>
+        {
+            playerChipsChangeCountText.DOFade(1, 0.3f) // Fade in
+                .OnComplete(() =>
+                {
+                    DOVirtual.DelayedCall(3, () =>
+                    {
+                        playerChipsChangeCountText.DOFade(0, 0.3f) // Fade out
+                            .OnComplete(() =>
+                            {
+                                playerChipsChangeCountText.gameObject.SetActive(false);
+                            });
+                    });
+                });
+        });
+    }
+
+
+
 }

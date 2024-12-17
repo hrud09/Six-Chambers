@@ -139,6 +139,7 @@ public class CardManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1);
+       // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
         chamberManager.playerHandManager.playersTurn = true;
     }
 }

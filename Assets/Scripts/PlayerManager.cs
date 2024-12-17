@@ -15,7 +15,8 @@ public class PlayerManager : MonoBehaviour
     public GameManager gameManager;
 
     [Header("Chips System")]
-    public TMP_Text potChipsText;
+   // public GameObject boardChipsCountObj;
+    //public TMP_Text potChipsText;
     public TMP_Text currentChipsCountText;
 
     public int chipsCount;
@@ -27,13 +28,14 @@ public class PlayerManager : MonoBehaviour
     public TMP_Text playerChipsChangeCountText;
     private void Start()
     {
+       // boardChipsCountObj.SetActive(false);
         chipsCount = PlayerPrefs.GetInt("PlayerChipsCount", 6);
         UpdateChipsCount();
     }
 
     public void SelectPlayerChamber(Chamber _chosenChamber)
     {
-        powerManager.ActivatePowerCards(PowerType.MidRound);
+     //   powerManager.ActivatePowerCards(PowerType.MidRound);
         chamberSelected = true;
         playerChosenChamber = _chosenChamber;
 
@@ -49,6 +51,7 @@ public class PlayerManager : MonoBehaviour
         _chosenChamber.UpdateChipsCount();
         UpdateChipsCount();
         chamberManager.PickRangersHand();
+       
     }
 
     private int CalculateChipsAmountToWager(Chamber _chosenChamber)
@@ -151,6 +154,7 @@ public class PlayerManager : MonoBehaviour
 
     private void UpdateChipsCount(bool chipsForBoard = false)
     {
+       // potChipsText.text = (wageredChipsCount*2).ToString();
         int change = chipsCount - lastChipsCount; // Calculate the change in chips count
         lastChipsCount = chipsCount; // Update the last chips count
 

@@ -16,7 +16,7 @@ public class Chamber : MonoBehaviour
     [Header("Cards")]
     public List<Card> chamberCards, chamberRankCards;
     public Transform cardParent;
-    public Transform[] bestCardsHolders;
+    
     private Vector3[] originalPositions;
     private List<Tween> cardTweens = new List<Tween>();
     public GameObject layerSelectionAura;

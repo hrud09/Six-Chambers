@@ -200,7 +200,6 @@ public class PokerEvaluator : MonoBehaviour
         {
             foreach (var chamber in winningChambers)
             {
-                chamber.topRankUI.SetActive(true);
                 chamber.chamberUI.rankText.fontSize = 0.65f;
             }
             winText.text = "Tie: Multiple Winners";
@@ -228,9 +227,7 @@ public class PokerEvaluator : MonoBehaviour
             card.EnableTopCardVisual();
             index++;
         }
-        winningChamber.topRankUI.SetActive(true);
-        winningChamber.topRankUI.transform.DOScale(Vector3.one * 0.35f, 0.2f).OnComplete(() =>
-            winningChamber.topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.2f));
+       
         winningChamber.chamberUI.rankText.fontSize = 0.65f;
     }
 

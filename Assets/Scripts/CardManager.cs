@@ -18,7 +18,8 @@ public class CardInfo
 {
     public CardType CardType;
     public int cardNumber;
-    public Sprite cardTexture;
+    public Sprite cardFaceSprite;
+
 }
 
 [System.Serializable]
@@ -47,7 +48,7 @@ public class CardManager : MonoBehaviour
         // Initialization and card drawing routines
         InitializeCards();
         StartCoroutine(DrawCardsForChambers());
-        StartCoroutine(DrawCardsOnBoard());
+       
     }
 
     void InitializeCards()
@@ -61,7 +62,7 @@ public class CardManager : MonoBehaviour
                 {
                     CardInfo cardInfo = new CardInfo
                     {
-                        cardTexture = cardSprite,
+                        cardFaceSprite = cardSprite,
                         CardType = cardDeck.CardType,
                         cardNumber = cardDeck.sprites.ToList().IndexOf(cardSprite) + 2
                     };
@@ -82,40 +83,38 @@ public class CardManager : MonoBehaviour
 
     public IEnumerator DrawCardsForChambers()
     {
-        foreach (var chamberTransform in chamberManager.chamberTransforms)
-        {
-            Chamber chamber = chamberTransform.GetComponent<Chamber>();
+        
+        for (int i = 0; i < chamberManager.chamberTransforms.Length * 2; i++) {
+
+            int index = 0;
+            if (i > 5) index = i - 6;
+            else index = i;
+            Chamber chamber = chamberManager.chamberTransforms[index].GetComponent<Chamber>();
+
             CardInfo cardInfo1 = DrawRandomCard();
-            CardInfo cardInfo2 = DrawRandomCard();
+
 
             cardsInHands.Add(cardInfo1);
-            cardsInHands.Add(cardInfo2);
 
-            Vector3 targetDirection = (chamberTransform.parent.position - chamberTransform.position).normalized;
-            targetDirection.y = 0;
-            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 
-            GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
-            GameObject card2 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
+            GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.identity, chamber.cardParent);
             cardsOnHands.Add(card1.transform);
-            cardsOnHands.Add(card2.transform);
-            card1.GetComponent<Card>().InitiateCard(cardInfo1);
-            card2.GetComponent<Card>().InitiateCard(cardInfo2);
+            card1.GetComponent<Card>().InitiateCard(cardInfo1, i > 5);
 
-            chamber.chamberCards.Add(card2.GetComponent<Card>());
             chamber.chamberCards.Add(card1.GetComponent<Card>());
-            Vector3 pos1 = chamber.cardParent.position;
-            Vector3 pos2 = pos1 - chamberTransform.forward * 1f + Vector3.up * 0.2f;
-
+            Vector3 pos1 = Vector3.zero;
             chamber.InitializeOriginalPositions();
+            if (i <= 5) pos1.z = +0.5f;
 
-            if (chamberTransform.localPosition.x > 0) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 20, 180));
-            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
+           
+            if (i <= 5) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
+            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 180));
 
-            card1.transform.DOMove(pos1, 1f);
-            card2.transform.DOMove(pos2, 1f);
+            card1.transform.DOLocalMove(pos1, 1f).SetEase(Ease.InOutQuad);
             yield return new WaitForSeconds(0.2f);
         }
+        yield return new WaitForSeconds(1f);
+        StartCoroutine(DrawCardsOnBoard());
     }
 
     public IEnumerator DrawCardsOnBoard()
@@ -124,7 +123,7 @@ public class CardManager : MonoBehaviour
         {
             CardInfo cardInfo = DrawRandomCard();
             GameObject card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 180), boardManager.boardCardParents[i]);
-            card.GetComponent<Card>().InitiateCard(cardInfo);
+            card.GetComponent<Card>().InitiateCard(cardInfo, i < 3);
 
             Vector3 pos = boardManager.boardCardParents[i].position;
             boardManager.cardsOnBoard.Add(card);
@@ -132,10 +131,11 @@ public class CardManager : MonoBehaviour
             int index = i;
             card.transform.DOMove(pos, 1f).OnComplete(() =>
             {
-                if (index < 3) card.transform.DOLocalRotate(Vector3.zero, 1f);
+
             });
 
             yield return new WaitForSeconds(0.2f);
+            if (index == 2) yield return new WaitForSeconds(0.5f);
         }
 
         yield return new WaitForSeconds(1);

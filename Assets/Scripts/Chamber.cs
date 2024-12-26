@@ -20,7 +20,6 @@ public class Chamber : MonoBehaviour
     private Vector3[] originalPositions;
     private List<Tween> cardTweens = new List<Tween>();
     public GameObject layerSelectionAura;
-    public GameObject topRankUI;
 
     // Chips System
     [Header("Chips System")]
@@ -65,14 +64,22 @@ public class Chamber : MonoBehaviour
             chamberManager.playerHandManager.SelectPlayerChamber(this);
         }
     }
-
-    private void OnMouseOver()
+    private void OnMouseEnter()
     {
         if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
         {
             layerSelectionAura.SetActive(true);
             chamberManager.playerHandManager.mouseOverChambers = true;
-            LiftCards();
+            //LiftCards();
+        }
+    }
+    private void OnMouseOver()
+    {
+        if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
+        {
+          //  layerSelectionAura.SetActive(true);
+          //  chamberManager.playerHandManager.mouseOverChambers = true;
+           // LiftCards();
         }
     }
 
@@ -80,7 +87,7 @@ public class Chamber : MonoBehaviour
     {
         if (chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
-        LowerCards();
+        //LowerCards();
     }
 
     // Card Lift/Lower

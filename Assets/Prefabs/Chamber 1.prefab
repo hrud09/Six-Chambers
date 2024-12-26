@@ -154,7 +154,6 @@ MonoBehaviour:
   chamberRankCards: []
   cardParent: {fileID: 1061795735583007684}
   layerSelectionAura: {fileID: 7867315929418357936}
-  topRankUI: {fileID: 0}
   initialChipsCount: 2
   currentChipsCount: 0
 --- !u!65 &2063805985933014112
@@ -176,8 +175,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.6096802, y: 1, z: 4.0281773}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 2.8202639, y: 3.8095164, z: 6.747967}
+  m_Center: {x: -0.021962643, y: 1.4047582, z: -0.5306711}
 --- !u!1 &2524550573402283212
 GameObject:
   m_ObjectHideFlags: 0
@@ -505,6 +504,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2438846465937642315}
+  - component: {fileID: 3062429651396184818}
   m_Layer: 0
   m_Name: Chamber Man
   m_TagString: Untagged
@@ -528,6 +528,20 @@ Transform:
   - {fileID: 8164767946305658620}
   m_Father: {fileID: 3010711870483195115}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3062429651396184818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4986482478351466890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56cf2f502c9edd343bf02fd20740ec26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  triggers: []
+  chrAnimator: {fileID: 0}
 --- !u!1 &5537503797988287785
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,7 +1134,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0ae544a833919bf47ad9703ba648ab02, type: 2}
+  - {fileID: 2100000, guid: 6eaf9040f40b39c499f80cf377c6e0cb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1420,7 +1434,7 @@ PrefabInstance:
     - target: {fileID: 5065708497439451755, guid: f3e3af284aba7514e990db16c5a8e7d3,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7764147571137413392, guid: f3e3af284aba7514e990db16c5a8e7d3,
         type: 3}

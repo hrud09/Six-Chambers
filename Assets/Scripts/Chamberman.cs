@@ -5,12 +5,14 @@ using UnityEngine;
 
 public enum AnimationType { 
 
-    Idle1,
-    Idle2,
-    Idle3,
-    Thinking,
+    Idle,
+    RaiseHand,
     Angry,
-    Scared
+    Scared,
+    Win,
+    Lose,
+    Die,
+    Disapointed2
 
 }
 
@@ -24,7 +26,13 @@ public class Chamberman : MonoBehaviour
 {
     public List<AnimationTriggers> triggers;
     public Animator chrAnimator;
-
+    public Chamber chamber;
+    public GameObject crown;
+    private void Start()
+    {
+        chamber = GetComponentInParent<Chamber>();
+       
+    }
 
     public void TriggerAnimation(AnimationType animationType)
     {
@@ -35,4 +43,6 @@ public class Chamberman : MonoBehaviour
         foreach (var trigger in triggers) if (trigger.animationType == _animationType) return trigger;
         return null;
     }
+
+ 
 }

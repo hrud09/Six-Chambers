@@ -65,5 +65,9 @@ public class ChamberManager : MonoBehaviour
 
     }
 
-   
+    public bool AllHandRevealed()
+    {
+        foreach (Chamber chamber in chambers) if (!chamber.handRevealed) return false;
+            return true;
+    }
 }

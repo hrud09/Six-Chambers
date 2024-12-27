@@ -42,11 +42,7 @@ public class PowerManager : MonoBehaviour
     
     }
     
-    public void RevealOneCardOnBoardPower() { 
-    
-        pokerEvaluator.RevealOneCardFromBoard();
-    
-    }
+
 
     public void RefillPowerCards()
     {

@@ -11,7 +11,9 @@ public class Chamber : MonoBehaviour
     public int chamberIndex;
     private ChamberManager chamberManager;
     public ChamberUIScript chamberUI;
+    private PokerEvaluator pokerEvaluator;
 
+    public bool handRevealed;
     // Cards
     [Header("Cards")]
     public List<Card> chamberCards, chamberRankCards;
@@ -25,10 +27,14 @@ public class Chamber : MonoBehaviour
     [Header("Chips System")]
     public int initialChipsCount, currentChipsCount;
 
+
+    [Header("ChamberMan")]
+    public Chamberman chamberman;
     private void Awake()
     {
-       
+        chamberman = GetComponentInChildren<Chamberman>();
         chamberManager = GetComponentInParent<ChamberManager>();
+        pokerEvaluator = FindObjectOfType<PokerEvaluator>();
     }
 
     void Start()
@@ -63,15 +69,36 @@ public class Chamber : MonoBehaviour
         {
             chamberManager.playerHandManager.SelectPlayerChamber(this);
         }
+        else if (pokerEvaluator.ReadyToRevealChamberCards)
+        {
+            RevealHand();
+        }
     }
     private void OnMouseEnter()
     {
-        if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
+        if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn/* && !chamberManager.playerHandManager.mouseOverChambers*/)
         {
             layerSelectionAura.SetActive(true);
             chamberManager.playerHandManager.mouseOverChambers = true;
+            chamberman.TriggerAnimation(AnimationType.RaiseHand);
             //LiftCards();
         }
+       
+    }
+
+    private void RevealHand()
+    {
+        handRevealed = true;
+        chamberCards[0].transform
+            .DOLocalRotate(Vector3.zero, 0.5f)
+            .OnComplete(() => {
+                chamberCards[0].cardBackSpriteRend.enabled = false;
+
+                chamberCards[0].cardFaceSpriteRend.enabled = true;
+                chamberCards[0].transform.DOLocalMoveZ(1.3f, 0.2f);
+                pokerEvaluator.CheckHand(this);
+                if (chamberManager.AllHandRevealed()) pokerEvaluator.CheckPokerLogics();
+            });
     }
     private void OnMouseOver()
     {
@@ -85,8 +112,10 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseExit()
     {
+
         if (chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
+        chamberman.TriggerAnimation(AnimationType.Idle);
         //LowerCards();
     }
 

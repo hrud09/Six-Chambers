@@ -34,57 +34,33 @@ public class PokerEvaluator : MonoBehaviour
     public PlayerEconomyManager playerEconomyManager;
     public Chamber winningChamber;
 
-    [Header("Reveal Section")]
-    public bool autoReveal;
     public Button revealButton;
     public TMP_Text revealText;
     public RectTransform autoTextRect;
-    public Toggle autoRevealToggle;
 
     [Header("Winning Hand Display")]
     public TMP_Text winningHandText;
     //public GameObject winningHandShowBG;
     public Transform[] topCardParents;
     public Color[] winLoseColors;
+    public bool ReadyToRevealChamberCards;
     private void Start()
     {
-        autoRevealToggle.isOn = true;
-        autoReveal = true;
-       
+     
         revealButton.enabled = false;
-        revealText.color = autoReveal ? Color.gray : Color.white;
-    }
-
-    public void ToggleAutoReveal()
-    {
-        autoReveal = !autoReveal;
-        revealButton.enabled = !autoReveal;
-        revealText.color = autoReveal ? Color.gray : Color.white;
-        autoTextRect.DOScale(autoReveal ? Vector3.one * 1.3f : Vector3.one, 0.2f);
-    }
-
-    public void RevealCards() {
-
-        if (chamberManager.playerHandManager.playersTurn)
-        {
-            RevealBoardCards();
-        }
     }
 
     public void CallForRevealAction()
     {
-        revealButton.enabled = !autoReveal;
-
-        revealText.color = autoReveal ? Color.gray : Color.green;
-        if (autoReveal) RevealBoardCards();
+        ReadyToRevealChamberCards = true;
+        revealButton.enabled = true;
     }
 
-    private void RevealBoardCards()
+   /* public void RevealBoardCards()
     {
         revealButton.enabled = false;
-        autoRevealToggle.enabled = false;
         winningHandText.text = "Working...";
-        for (int i = 0; i < boardManager.cardsOnBoard.Count; i++)
+        for (int i = 3; i < boardManager.cardsOnBoard.Count; i++)
         {
             int index = i;
             boardManager.cardsOnBoard[i].transform
@@ -92,20 +68,33 @@ public class PokerEvaluator : MonoBehaviour
                 .SetDelay(0.2f)
                 .OnComplete(() =>
                 {
+                    boardManager.cardsOnBoard[i].cardBackSpriteRend.enabled = false;
+                    boardManager.cardsOnBoard[i].cardFaceSpriteRend.enabled = true;
                     if (index == boardManager.cardsOnBoard.Count - 1)
                         StartCoroutine(RevealHandCards());
                 });
         }
-    }
+    }*/
 
+    public void RevealAllHandCardsAtOnce()
+    {
+        StartCoroutine(RevealHandCards());
+    }
     private IEnumerator RevealHandCards()
     {
         foreach (var chamber in chamberManager.chambers)
         {
             int index = chamberManager.chambers.IndexOf(chamber);
-            chamber.chamberCards[1].transform
+            chamber.chamberCards[0].transform
                 .DOLocalRotate(Vector3.zero, 0.5f)
-                .OnComplete(() => CheckHand(chamber));
+                .OnComplete(() => {
+                    chamber.chamberCards[0].cardBackSpriteRend.enabled = false;
+
+                    chamber.chamberCards[0].cardFaceSpriteRend.enabled = true;
+                    chamber.chamberCards[0].transform.DOLocalMoveZ(1.3f, 0.2f);
+                    CheckHand(chamber);
+                    
+                    });
             yield return new WaitForSeconds(0.5f);
         }
         CheckPokerLogics();
@@ -115,22 +104,6 @@ public class PokerEvaluator : MonoBehaviour
     {
         Chamber chamber = chamberManager.chambers[Random.Range(0, chamberManager.chambers.Count)];
         chamber.chamberCards[1].transform.DOLocalRotate(Vector3.zero, 0.5f);
-    }
-
-    public void RevealOneCardFromBoard()
-    {
-        for (int i = 0; i < boardManager.cardsOnBoard.Count - 1; i++)
-        {
-            int index = i;
-            boardManager.cardsOnBoard[i].transform
-                .DOLocalRotate(Vector3.zero, 0.5f)
-                .SetDelay(0.2f)
-                .OnComplete(() =>
-                {
-                    if (index == boardManager.cardsOnBoard.Count - 1)
-                        CallForRevealAction();
-                });
-        }
     }
 
     public void CheckHand(Chamber chamber)
@@ -147,7 +120,7 @@ public class PokerEvaluator : MonoBehaviour
             playerEconomyManager.UpdateCredit(rankwisePoints[evaluation.HandValue - 1]);
     }
 
-    void CheckPokerLogics()
+    public void CheckPokerLogics()
     {
         var cardsOnBoard = boardManager.cards;
         winningChamber = null;

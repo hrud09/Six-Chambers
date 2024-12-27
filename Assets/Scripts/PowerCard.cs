@@ -25,9 +25,6 @@ public class PowerCard : MonoBehaviour
     {
         UpdateUI();
     }
-
-
-
     public void UsePower()
     {
         if (PlayerEconomyManager.Instance.currentCredit >= power.powerCost)

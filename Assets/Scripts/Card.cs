@@ -6,13 +6,24 @@ public class Card : MonoBehaviour
 {
     public CardInfo cardInfo;
 
-    public MeshRenderer cardMesh;
+    public SpriteRenderer frontFaceRend, backFaceRend;
     public GameObject playerSelectionAura, rangerSelectionAura;
     public GameObject topCardsAura;
-    public void InitiateCard(CardInfo _cardInfo)
+    public void InitiateCard(CardInfo _cardInfo, bool faceUp)
     {
         cardInfo = _cardInfo;
-        cardMesh.material.mainTexture = cardInfo.cardTexture.texture;
+        frontFaceRend.sprite = cardInfo.cardTexture;
+        if (faceUp)
+        {
+            frontFaceRend.enabled = true;
+            backFaceRend.enabled = false;
+        }
+        else
+        {
+            frontFaceRend.enabled = faceUp;
+            backFaceRend.enabled = true;
+        }
+       
     }
 
     public void EnableTopCardVisual()

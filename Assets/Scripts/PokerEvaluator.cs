@@ -34,78 +34,67 @@ public class PokerEvaluator : MonoBehaviour
     public PlayerEconomyManager playerEconomyManager;
     public Chamber winningChamber;
 
-    [Header("Reveal Section")]
-    public bool autoReveal;
     public Button revealButton;
     public TMP_Text revealText;
     public RectTransform autoTextRect;
-    public Toggle autoRevealToggle;
 
     [Header("Winning Hand Display")]
     public TMP_Text winningHandText;
     //public GameObject winningHandShowBG;
     public Transform[] topCardParents;
     public Color[] winLoseColors;
+    public bool ReadyToRevealChamberCards;
     private void Start()
     {
-        autoRevealToggle.isOn = true;
-        autoReveal = true;
-       
+
         revealButton.enabled = false;
-        revealText.color = autoReveal ? Color.gray : Color.white;
-    }
-
-    public void ToggleAutoReveal()
-    {
-        autoReveal = !autoReveal;
-        revealButton.enabled = !autoReveal;
-        revealText.color = autoReveal ? Color.gray : Color.white;
-        autoTextRect.DOScale(autoReveal ? Vector3.one * 1.3f : Vector3.one, 0.2f);
-    }
-
-    public void RevealCards() {
-
-        if (chamberManager.playerHandManager.playersTurn)
-        {
-            RevealBoardCards();
-        }
     }
 
     public void CallForRevealAction()
     {
-        revealButton.enabled = !autoReveal;
-
-        revealText.color = autoReveal ? Color.gray : Color.green;
-        if (autoReveal) RevealBoardCards();
+        ReadyToRevealChamberCards = true;
+        revealButton.enabled = true;
     }
 
-    private void RevealBoardCards()
+    /* public void RevealBoardCards()
+     {
+         revealButton.enabled = false;
+         winningHandText.text = "Working...";
+         for (int i = 3; i < boardManager.cardsOnBoard.Count; i++)
+         {
+             int index = i;
+             boardManager.cardsOnBoard[i].transform
+                 .DOLocalRotate(Vector3.zero, 0.5f)
+                 .SetDelay(0.2f)
+                 .OnComplete(() =>
+                 {
+                     boardManager.cardsOnBoard[i].cardBackSpriteRend.enabled = false;
+                     boardManager.cardsOnBoard[i].cardFaceSpriteRend.enabled = true;
+                     if (index == boardManager.cardsOnBoard.Count - 1)
+                         StartCoroutine(RevealHandCards());
+                 });
+         }
+     }*/
+
+    public void RevealAllHandCardsAtOnce()
     {
-        revealButton.enabled = false;
-        autoRevealToggle.enabled = false;
-        winningHandText.text = "Working...";
-        for (int i = 0; i < boardManager.cardsOnBoard.Count; i++)
-        {
-            int index = i;
-            boardManager.cardsOnBoard[i].transform
-                .DOLocalRotate(Vector3.zero, 0.5f)
-                .SetDelay(0.2f)
-                .OnComplete(() =>
-                {
-                    if (index == boardManager.cardsOnBoard.Count - 1)
-                        StartCoroutine(RevealHandCards());
-                });
-        }
+        StartCoroutine(RevealHandCards());
     }
-
     private IEnumerator RevealHandCards()
     {
         foreach (var chamber in chamberManager.chambers)
         {
             int index = chamberManager.chambers.IndexOf(chamber);
-            chamber.chamberCards[1].transform
+            chamber.chamberCards[0].transform
                 .DOLocalRotate(Vector3.zero, 0.5f)
-                .OnComplete(() => CheckHand(chamber));
+                .OnComplete(() => {
+                   /* chamber.chamberCards[0].cardBackSpriteRend.enabled = false;
+
+                    chamber.chamberCards[0].cardFaceSpriteRend.enabled = true;*/
+                    chamber.chamberCards[0].transform.DOLocalMoveZ(1.3f, 0.2f);
+                    CheckHand(chamber);
+
+                });
             yield return new WaitForSeconds(0.5f);
         }
         CheckPokerLogics();
@@ -117,28 +106,12 @@ public class PokerEvaluator : MonoBehaviour
         chamber.chamberCards[1].transform.DOLocalRotate(Vector3.zero, 0.5f);
     }
 
-    public void RevealOneCardFromBoard()
-    {
-        for (int i = 0; i < boardManager.cardsOnBoard.Count - 1; i++)
-        {
-            int index = i;
-            boardManager.cardsOnBoard[i].transform
-                .DOLocalRotate(Vector3.zero, 0.5f)
-                .SetDelay(0.2f)
-                .OnComplete(() =>
-                {
-                    if (index == boardManager.cardsOnBoard.Count - 1)
-                        CallForRevealAction();
-                });
-        }
-    }
-
     public void CheckHand(Chamber chamber)
     {
         var allCards = new List<Card>(boardManager.cards);
         allCards.AddRange(chamber.chamberCards);
 
-        HandEvaluation evaluation = EvaluateHand(chamber,allCards);
+        HandEvaluation evaluation = EvaluateHand(chamber, allCards);
         chamber.chamberUI.rankUICanvasGroup.alpha = 1;
         chamber.chamberUI.rankText.enabled = true;
         chamber.chamberUI.rankText.text = GetWinType(evaluation.HandValue);
@@ -147,7 +120,7 @@ public class PokerEvaluator : MonoBehaviour
             playerEconomyManager.UpdateCredit(rankwisePoints[evaluation.HandValue - 1]);
     }
 
-    void CheckPokerLogics()
+    public void CheckPokerLogics()
     {
         var cardsOnBoard = boardManager.cards;
         winningChamber = null;
@@ -158,9 +131,9 @@ public class PokerEvaluator : MonoBehaviour
         {
             var chamberCardsincRivver = new List<Card>(cardsOnBoard);
             chamberCardsincRivver.AddRange(chamber.chamberCards);
-            
-            HandEvaluation evaluation = EvaluateHand(chamber,chamberCardsincRivver);
-           // winningChamber.chamberCardsincRivver = evaluation.HighValueCards;
+
+            HandEvaluation evaluation = EvaluateHand(chamber, chamberCardsincRivver);
+            // winningChamber.chamberCardsincRivver = evaluation.HighValueCards;
 
             if (evaluation.HandValue > highestHandValue)
             {
@@ -176,7 +149,7 @@ public class PokerEvaluator : MonoBehaviour
 
         if (tiedChambers.Count == 1)
             HandleSingleWinner(tiedChambers[0], highestHandValue, cardsOnBoard);
-        else if(tiedChambers.Count > 1)
+        else if (tiedChambers.Count > 1)
             HandleTieBreaker(tiedChambers, highestHandValue, cardsOnBoard);
     }
 
@@ -200,7 +173,6 @@ public class PokerEvaluator : MonoBehaviour
         {
             foreach (var chamber in winningChambers)
             {
-                chamber.topRankUI.SetActive(true);
                 chamber.chamberUI.rankText.fontSize = 0.65f;
             }
             winText.text = "Tie: Multiple Winners";
@@ -210,7 +182,7 @@ public class PokerEvaluator : MonoBehaviour
     void HighlightWinningHand(Chamber winningChamber, int handValue, List<Card> cardsOnBoard)
     {
         //winningHandShowBG.SetActive(true);
-       
+
         var winningHand = EvaluateHand(winningChamber, new List<Card>(cardsOnBoard.Concat(winningChamber.chamberCards)));
         int index = 0;
         print(winningHand.HighValueCards.Count);
@@ -228,20 +200,18 @@ public class PokerEvaluator : MonoBehaviour
             card.EnableTopCardVisual();
             index++;
         }
-        winningChamber.topRankUI.SetActive(true);
-        winningChamber.topRankUI.transform.DOScale(Vector3.one * 0.35f, 0.2f).OnComplete(() =>
-            winningChamber.topRankUI.transform.DOScale(Vector3.one * 0.3f, 0.2f));
+
         winningChamber.chamberUI.rankText.fontSize = 0.65f;
     }
 
     HandEvaluation EvaluateHand(Chamber chamber, List<Card> cards)
     {
-       
+
         var sortedCards = cards.OrderBy(c => c.cardInfo.cardNumber).ToList();
         var uniqueCards = sortedCards.GroupBy(c => c.cardInfo.cardNumber).Select(g => g.First()).ToList();
 
         HandEvaluation result = new HandEvaluation();
-        List<Card>  HighValueCards = new List<Card>();
+        List<Card> HighValueCards = new List<Card>();
         result.HandValue = GetMultiplesValue(sortedCards, out HighValueCards);
         result.HighValueCards = HighValueCards;
         chamber.chamberRankCards = new List<Card>();
@@ -266,7 +236,7 @@ public class PokerEvaluator : MonoBehaviour
         var groups = cards.GroupBy(c => c.cardInfo.cardNumber)
                           .OrderByDescending(g => g.Count()) // Sort by frequency
                           .ThenByDescending(g => g.Key); // Then by card number
-       
+
         // Initialize high-value cards
         List<Card> _highCards = new List<Card>();
         highValueCards = new List<Card>();
@@ -335,8 +305,8 @@ public class PokerEvaluator : MonoBehaviour
                 rank = 2;
                 break;
             }
-          // print($"HighValueCards: {_highCards.Count}");
-     
+            // print($"HighValueCards: {_highCards.Count}");
+
         }
 
         // If rank is still 1 (High Card), pick the top 5 cards

@@ -36,17 +36,6 @@ public class PowerManager : MonoBehaviour
             }
         }
     }
-    public void RevealOneCardPower() { 
-    
-        pokerEvaluator.RevealRandomChambersSecondCard();
-    
-    }
-    
-    public void RevealOneCardOnBoardPower() { 
-    
-        pokerEvaluator.RevealOneCardFromBoard();
-    
-    }
 
     public void RefillPowerCards()
     {

@@ -26,7 +26,7 @@ public class ChamberManager : MonoBehaviour
         foreach (var chamber in chambers)
         {
             chamber.chamberIndex = chambers.IndexOf(chamber) + 1;
-          
+
         }
 
     }
@@ -65,5 +65,9 @@ public class ChamberManager : MonoBehaviour
 
     }
 
-   
+    public bool AllHandRevealed()
+    {
+        foreach (Chamber chamber in chambers) if (!chamber.handRevealed) return false;
+        return true;
+    }
 }

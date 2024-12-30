@@ -38,16 +38,23 @@ public class CardManager : MonoBehaviour
     public List<CardInfo> cardsInHands;
     public List<Transform> cardsOnHands;
     public ChamberManager chamberManager;
+    private RangerManager rangerManager;
+    private PlayerManager playerManager;
     public BoardManager boardManager;
     public Transform cardSpawnPos;
 
     public PokerEvaluator pokerEvaluator;
+
+
+    private bool cardsDistributedToChambers;
+
+    public Transform[] deckCards;
     void Start()
     {
         // Initialization and card drawing routines
         InitializeCards();
-        StartCoroutine(DrawCardsForChambers());
-        StartCoroutine(DrawCardsOnBoard());
+        rangerManager = FindObjectOfType<RangerManager>();
+        playerManager = FindObjectOfType<PlayerManager>();
     }
 
     void InitializeCards()
@@ -79,67 +86,154 @@ public class CardManager : MonoBehaviour
         tempDeck.RemoveAt(index);
         return cardInfo;
     }
-
-    public IEnumerator DrawCardsForChambers()
+    public void DrawCardsForChambers()
     {
-        foreach (var chamberTransform in chamberManager.chamberTransforms)
+
+        StartCoroutine(DrawCardsForChambersDelay());
+    }
+    public IEnumerator DrawCardsForChambersDelay()
+    {
+        for (int i = 0; i < chamberManager.chamberTransforms.Length * 2; i++)
         {
-            Chamber chamber = chamberTransform.GetComponent<Chamber>();
+
+            int index = 0;
+            if (i > 5) index = i - 6;
+            else index = i;
+            Chamber chamber = chamberManager.chamberTransforms[index].GetComponent<Chamber>();
+
             CardInfo cardInfo1 = DrawRandomCard();
-            CardInfo cardInfo2 = DrawRandomCard();
+
 
             cardsInHands.Add(cardInfo1);
-            cardsInHands.Add(cardInfo2);
 
-            Vector3 targetDirection = (chamberTransform.parent.position - chamberTransform.position).normalized;
-            targetDirection.y = 0;
-            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 
-            GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
-            GameObject card2 = Instantiate(cardPrefab, cardSpawnPos.position, targetRotation, chamber.cardParent);
+            GameObject card1 = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.identity, chamber.cardParent);
             cardsOnHands.Add(card1.transform);
-            cardsOnHands.Add(card2.transform);
-            card1.GetComponent<Card>().InitiateCard(cardInfo1);
-            card2.GetComponent<Card>().InitiateCard(cardInfo2);
+            card1.GetComponent<Card>().InitiateCard(cardInfo1, i > 5);
 
-            chamber.chamberCards.Add(card2.GetComponent<Card>());
             chamber.chamberCards.Add(card1.GetComponent<Card>());
-            Vector3 pos1 = chamber.cardParent.position;
-            Vector3 pos2 = pos1 - chamberTransform.forward * 1f + Vector3.up * 0.2f;
-
+            Vector3 pos1 = Vector3.zero;
             chamber.InitializeOriginalPositions();
+            if (i <= 5) pos1.z = +0.5f;
 
-            if (chamberTransform.localPosition.x > 0) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 20, 180));
-            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
 
-            card1.transform.DOMove(pos1, 1f);
-            card2.transform.DOMove(pos2, 1f);
+            if (i <= 5) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
+            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 180));
+
+            card1.transform.DOLocalMove(pos1, 1f).SetEase(Ease.InOutQuad);
             yield return new WaitForSeconds(0.2f);
         }
+        yield return new WaitForSeconds(1f);
     }
 
-    public IEnumerator DrawCardsOnBoard()
+    public void DrawCardsOnBoard()
     {
-        for (int i = 0; i < boardManager.boardCardParents.Length; i++)
+        StartCoroutine(DrawCardsOnBoardDelay());
+    }
+
+    public IEnumerator DrawCardsOnBoardDelay()
+    {
+        for (int i = 0; i < boardManager.boardCardParents.Length - 2; i++)
         {
             CardInfo cardInfo = DrawRandomCard();
-            GameObject card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 180), boardManager.boardCardParents[i]);
-            card.GetComponent<Card>().InitiateCard(cardInfo);
+            Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 180), boardManager.boardCardParents[i]).GetComponent<Card>();
+            card.InitiateCard(cardInfo, i < 3);
 
             Vector3 pos = boardManager.boardCardParents[i].position;
             boardManager.cardsOnBoard.Add(card);
-            boardManager.cards.Add(card.GetComponent<Card>());
+            boardManager.cards.Add(card);
             int index = i;
             card.transform.DOMove(pos, 1f).OnComplete(() =>
             {
-                if (index < 3) card.transform.DOLocalRotate(Vector3.zero, 1f);
+
             });
 
             yield return new WaitForSeconds(0.2f);
         }
 
         yield return new WaitForSeconds(1);
-       // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
+        // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
         chamberManager.playerHandManager.playersTurn = true;
+    }
+    public void DrawAnotherCardOnBoard()
+    {
+        CardInfo cardInfo = DrawRandomCard();
+        Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 180), boardManager.boardCardParents[boardManager.cardsOnBoard.Count]).GetComponent<Card>();
+        card.InitiateCard(cardInfo, true);
+
+        Vector3 pos = boardManager.boardCardParents[boardManager.cardsOnBoard.Count].position;
+        boardManager.cardsOnBoard.Add(card);
+        boardManager.cards.Add(card);
+        card.transform.DOMove(pos, 1f).OnComplete(() =>
+        {
+
+        });
+
+    }
+    private void OnMouseEnter()
+    {
+        if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
+        {
+            MouseOverDeck();
+        }
+        else if (!cardsDistributedToChambers)
+        {
+            MouseOverDeck();
+        }
+        else if (boardManager.cardsOnBoard.Count < 1)
+        {
+            MouseOverDeck();
+        }
+    }
+    private void OnMouseExit()
+    {
+        foreach (var item in deckCards)
+        {
+            item.DOScale(Vector3.one, 0.1f);
+            item.DOLocalRotate(Vector3.zero, 0.2f);
+        }
+    }
+    private void MouseOverDeck()
+    {
+        foreach (var item in deckCards)
+        {
+            item.localRotation = Quaternion.identity;
+            item.DOScale(Vector3.one * 1.2f, 0.2f);
+            item.DOLocalRotate(Vector3.up * Random.Range(-10f, 10f), 0.3f);
+        }
+    }
+    private void OnMouseDown()
+    {
+        MouseDownAction();
+    }
+    void MouseDownAction()
+    {
+
+            if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
+            {
+                DrawAnotherCardOnBoard();
+                if (boardManager.cardsOnBoard.Count == 5)
+                {
+
+                    pokerEvaluator.CallForRevealAction();
+
+                }
+            }
+            else if (!cardsDistributedToChambers)
+            {
+                cardsDistributedToChambers = true;
+                DrawCardsForChambers();
+
+
+            }
+            else if (boardManager.cardsOnBoard.Count < 1)
+            {
+                DrawCardsOnBoard();
+            }
+        }
+    
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space)) MouseDownAction();
     }
 }

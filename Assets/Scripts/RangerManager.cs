@@ -14,11 +14,11 @@ public class RangerManager : MonoBehaviour
     public bool chamberSelected;
     public void SelectRangerChamber(Chamber _selectedChamber)
     {
+        TutorialManager.Instance.ShowTutorial(TutorialType.DealNextCard);
         chamberSelected = true;
         rangerSelectedChamber = _selectedChamber;
         rangerSelectedChamber.chamberCards[0].playerSelectionAura.SetActive(false);
         rangerSelectedChamber.chamberCards[0].rangerSelectionAura.SetActive(true);
-        pokerEvaluator.CallForRevealAction();
         if (playerHandManager.playerChosenChamber == rangerSelectedChamber)
         {
            // playerHandManager.chooseAgainPopUp.SetActive(true);

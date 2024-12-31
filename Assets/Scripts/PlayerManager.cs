@@ -35,7 +35,8 @@ public class PlayerManager : MonoBehaviour
 
     public void SelectPlayerChamber(Chamber _chosenChamber)
     {
-     //   powerManager.ActivatePowerCards(PowerType.MidRound);
+        TutorialManager.Instance.ShowTutorial(TutorialType.RangersTurn);
+        //   powerManager.ActivatePowerCards(PowerType.MidRound);
         chamberSelected = true;
         playerChosenChamber = _chosenChamber;
 

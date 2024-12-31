@@ -52,6 +52,7 @@ public class PokerEvaluator : MonoBehaviour
 
     public void CallForRevealAction()
     {
+        TutorialManager.Instance.ShowTutorial(TutorialType.RevealAllHand);
         ReadyToRevealChamberCards = true;
         revealButton.enabled = true;
     }
@@ -78,6 +79,7 @@ public class PokerEvaluator : MonoBehaviour
 
     public void RevealAllHandCardsAtOnce()
     {
+        TutorialManager.Instance.ShowTutorial(TutorialType.ShowDown);
         StartCoroutine(RevealHandCards());
     }
     private IEnumerator RevealHandCards()

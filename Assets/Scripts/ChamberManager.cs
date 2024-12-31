@@ -70,4 +70,23 @@ public class ChamberManager : MonoBehaviour
         foreach (Chamber chamber in chambers) if (!chamber.handRevealed) return false;
         return true;
     }
+    public void PlayHandChoosingAnimation()
+    {
+        StartCoroutine(PlayHandChoosingAnimationDelay());
+    }
+    private IEnumerator PlayHandChoosingAnimationDelay()
+    {
+        foreach (var item in chambers)
+        {
+            item.LiftCards();
+            yield return new WaitForSeconds(0.1f);
+
+            item.LowerCards();
+        }
+
+        yield return new WaitForSeconds(0.1f);
+        TutorialManager.Instance.ShowTutorial(TutorialType.PlayersTurn);
+        yield return new WaitForSeconds(0.2f);
+        playerHandManager.playersTurn = true;
+    }
 }

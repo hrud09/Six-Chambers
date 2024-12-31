@@ -117,24 +117,24 @@ public class Chamber : MonoBehaviour
     }
 
     // Card Lift/Lower
-    private void LiftCards()
+    public void LiftCards()
     {
         KillCardTweens();
         for (int i = 0; i < chamberCards.Count; i++)
         {
 
-                cardTweens.Add(chamberCards[i].transform.DOLocalMoveY(01f, 0.2f));
+                cardTweens.Add(chamberCards[i].transform.DOLocalMoveY(1.5f, 0.15f));
           
         }
     }
 
-    private void LowerCards()
+    public void LowerCards()
     {
         KillCardTweens();
         for (int i = 0; i < chamberCards.Count; i++)
         {
 
-                cardTweens.Add(chamberCards[i].transform.DOLocalMoveY(0, 0.1f));
+                cardTweens.Add(chamberCards[i].transform.DOLocalMoveY(0, 0.2f));
             
         }
     }

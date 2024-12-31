@@ -55,6 +55,7 @@ public class CardManager : MonoBehaviour
         InitializeCards();
         rangerManager = FindObjectOfType<RangerManager>();
         playerManager = FindObjectOfType<PlayerManager>();
+        TutorialManager.Instance.ShowTutorial(TutorialType.DealCardsToChamber);
     }
 
     void InitializeCards()
@@ -88,7 +89,7 @@ public class CardManager : MonoBehaviour
     }
     public void DrawCardsForChambers()
     {
-
+        TutorialManager.Instance.HideTutorial(TutorialType.DealCardsToChamber);
         StartCoroutine(DrawCardsForChambersDelay());
     }
     public IEnumerator DrawCardsForChambersDelay()
@@ -124,10 +125,12 @@ public class CardManager : MonoBehaviour
             yield return new WaitForSeconds(0.2f);
         }
         yield return new WaitForSeconds(1f);
+        TutorialManager.Instance.ShowTutorial(TutorialType.DealCardsOnTable);
     }
 
     public void DrawCardsOnBoard()
     {
+        TutorialManager.Instance.HideTutorial(TutorialType.DealCardsOnTable);
         StartCoroutine(DrawCardsOnBoardDelay());
     }
 
@@ -152,8 +155,9 @@ public class CardManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1);
+      
         // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
-        chamberManager.playerHandManager.playersTurn = true;
+        chamberManager.PlayHandChoosingAnimation();
     }
     public void DrawAnotherCardOnBoard()
     {

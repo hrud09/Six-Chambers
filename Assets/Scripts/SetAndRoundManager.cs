@@ -19,9 +19,6 @@ public class SetAndRoundManager : MonoBehaviour
     public TMP_Text thisSetQuotaText;
     public int pointsQuota;
     public PlayerManager playerHandManager;
-
-
-    public TMP_Text countdownText;
     private void Awake()
     {
         
@@ -55,25 +52,9 @@ public class SetAndRoundManager : MonoBehaviour
         roundCount++;
 
         // playerHandManager.gameManager.nextRoundButton.SetActive(true);
-        /* if (roundCount >= 6)
-         {
-           *//*  if (playerHandManager.currentSetPoint >= pointsQuota)
-             {
-                 PromoteToNextSet();
-             }
-             else
-             {
-                 ResetRound();
-             }*//*
-         }
- */
-        countdownText.enabled = true;
         SaveProgress();
-        float count = 5.1f;
-        DOTween.To(() => count, x => count = x, 0.1f, 5)
-            .OnUpdate(() => {
-                countdownText.text = count.ToString("0");
-            }).OnComplete(() => {
+        float count = 5f;
+        DOTween.To(() => count, x => count = x, 0f, 5).OnComplete(() => {
                 NextRound();
             });
         

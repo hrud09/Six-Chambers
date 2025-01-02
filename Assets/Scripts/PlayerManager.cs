@@ -10,25 +10,23 @@ public class PlayerManager : MonoBehaviour
     public bool chamberSelected;
     public bool playersTurn;
 
-    public GameObject chooseAgainPopUp;
+    public GameObject outOfChips;
     public SetAndRoundManager setAndRoundManager;
     public GameManager gameManager;
 
     [Header("Chips System")]
-   // public GameObject boardChipsCountObj;
-    //public TMP_Text potChipsText;
     public TMP_Text currentChipsCountText;
+    public TMP_Text playerChipsChangeCountText;
 
     public int chipsCount;
-    public int wageredChipsCount; // Variable to store wagered chips count
+    public int wageredChipsCount;
     public PowerManager powerManager;
     public bool mouseOverChambers;
 
+    private int lastChipsCount;
 
-    public TMP_Text playerChipsChangeCountText;
     private void Start()
     {
-       // boardChipsCountObj.SetActive(false);
         chipsCount = PlayerPrefs.GetInt("PlayerChipsCount", 6);
         UpdateChipsCount();
     }
@@ -36,34 +34,25 @@ public class PlayerManager : MonoBehaviour
     public void SelectPlayerChamber(Chamber _chosenChamber)
     {
         TutorialManager.Instance.ShowTutorial(TutorialType.RangersTurn);
-        //   powerManager.ActivatePowerCards(PowerType.MidRound);
         chamberSelected = true;
         playerChosenChamber = _chosenChamber;
 
-        wageredChipsCount = CalculateChipsAmountToWager(_chosenChamber); // Update wagered chips
+        wageredChipsCount = CalculateChipsAmountToWager(_chosenChamber);
         chipsCount -= wageredChipsCount;
 
         if (wageredChipsCount > 1)
         {
-          //  _chosenChamber.currentChipsCount -= wageredChipsCount;
             _chosenChamber.UpdateChipsChangeText(-wageredChipsCount, Color.yellow);
         }
 
         _chosenChamber.UpdateChipsCount();
         UpdateChipsCount();
         chamberManager.PickRangersHand();
-       
-    }
-
-    private int CalculateChipsAmountToWager(Chamber _chosenChamber)
-    {
-        if (_chosenChamber.currentChipsCount == 0) return 1;
-        return Mathf.Min(2, _chosenChamber.currentChipsCount);
     }
 
     public void CheckSelectedChamber(Chamber winningChamber, int point)
     {
-        if (playerChosenChamber == chamberManager.rangerChosenChamber) // Live Chamber case
+        if (playerChosenChamber == chamberManager.rangerChosenChamber)
         {
             HandleLiveChamber(winningChamber);
         }
@@ -86,20 +75,17 @@ public class PlayerManager : MonoBehaviour
         }
         else if (chamberManager.rangerChosenChamber == winningChamber)
         {
-            chipsCount -= (1);
-
-            winningChamber.currentChipsCount += (1 + wageredChipsCount);
-            winningChamber.UpdateChipsChangeText(+(1 + wageredChipsCount), Color.green);
+            chipsCount -= 1;
+            winningChamber.currentChipsCount += 1 + wageredChipsCount;
+            winningChamber.UpdateChipsChangeText(1 + wageredChipsCount, Color.green);
             winningChamber.UpdateChipsCount();
 
-           // playerChosenChamber.currentChipsCount += wageredChipsCount;
-            playerChosenChamber.UpdateChipsChangeText(+wageredChipsCount, Color.yellow);
+            playerChosenChamber.UpdateChipsChangeText(wageredChipsCount, Color.yellow);
             playerChosenChamber.UpdateChipsCount();
         }
         else
         {
-            playerChosenChamber.UpdateChipsChangeText(+wageredChipsCount, Color.yellow);
-            //playerChosenChamber.currentChipsCount += wageredChipsCount;
+            playerChosenChamber.UpdateChipsChangeText(wageredChipsCount, Color.yellow);
             DistributeChipsToWinningChamber(winningChamber, wageredChipsCount);
         }
         winningChamber.UpdateChipsCount();
@@ -110,35 +96,29 @@ public class PlayerManager : MonoBehaviour
     {
         if (winningChamber == playerChosenChamber)
         {
-            chipsCount -= (3);
-            winningChamber.currentChipsCount += (3);
-            winningChamber.UpdateChipsChangeText(+(3), Color.green);
+            chipsCount -= 3;
+            winningChamber.currentChipsCount += 3;
+            winningChamber.UpdateChipsChangeText(3, Color.green);
             winningChamber.UpdateChipsCount();
         }
         else
         {
             chipsCount += wageredChipsCount;
-            //playerChosenChamber.currentChipsCount += wageredChipsCount;
             playerChosenChamber.UpdateChipsChangeText(wageredChipsCount, Color.yellow);
             playerChosenChamber.UpdateChipsCount();
+
             foreach (var chamber in chamberManager.chambers)
-            {/*
-                if (chamber != playerChosenChamber && chamber != chamberManager.rangerChosenChamber)
-                {*/
-                    int cCount = Mathf.Min(1, chamber.currentChipsCount);
-                    if (cCount > 0)
-                    {
-                        chipsCount += cCount;
-                        chamber.currentChipsCount -= cCount;
-                        chamber.UpdateChipsChangeText(-cCount, Color.red);
-                        chamber.UpdateChipsCount();
-                    }
-                    
-               // }
+            {
+                int cCount = Mathf.Min(1, chamber.currentChipsCount);
+                if (cCount > 0)
+                {
+                    chipsCount += cCount;
+                    chamber.currentChipsCount -= cCount;
+                    chamber.UpdateChipsChangeText(-cCount, Color.red);
+                    chamber.UpdateChipsCount();
+                }
             }
         }
-
-       
     }
 
     private void DistributeChipsToWinningChamber(Chamber winningChamber, int chipsToAdd)
@@ -146,53 +126,55 @@ public class PlayerManager : MonoBehaviour
         if (winningChamber != null)
         {
             winningChamber.currentChipsCount += chipsToAdd;
-            winningChamber.UpdateChipsChangeText(+chipsToAdd, Color.green);
+            winningChamber.UpdateChipsChangeText(chipsToAdd, Color.green);
             Debug.Log($"Chips added to winning chamber: {winningChamber.name}");
         }
     }
 
-   private int lastChipsCount; // Track previous chips count for comparison
+    private int CalculateChipsAmountToWager(Chamber _chosenChamber)
+    {
+        return _chosenChamber.currentChipsCount == 0 ? 1 : Mathf.Min(2, _chosenChamber.currentChipsCount);
+    }
 
     private void UpdateChipsCount(bool chipsForBoard = false)
     {
-       // potChipsText.text = (wageredChipsCount*2).ToString();
-        int change = chipsCount - lastChipsCount; // Calculate the change in chips count
-        lastChipsCount = chipsCount; // Update the last chips count
+        if (chipsCount <= 0)
+        {
+            outOfChips.SetActive(true);
+        }
+        else
+        {
+            outOfChips.SetActive(false);
+        }
 
-        // Update PlayerPrefs and current chips count text
+        int change = chipsCount - lastChipsCount;
+
+        if (change != 0)
+        {
+            playerChipsChangeCountText.DOKill();
+            playerChipsChangeCountText.text = change > 0 ? $"+{change}" : $"{change}";
+            playerChipsChangeCountText.color = chipsForBoard ? Color.yellow : (change > 0 ? Color.green : Color.red);
+            playerChipsChangeCountText.gameObject.SetActive(true);
+
+            // Fade-in and display the chip change text
+            playerChipsChangeCountText.DOFade(1, 0.3f).OnComplete(() =>
+            {
+                DOVirtual.DelayedCall(1.5f, () =>
+                {
+                    // Fade-out the chip change text after the delay
+                    playerChipsChangeCountText.DOFade(0, 0.3f).OnComplete(() =>
+                    {
+                        playerChipsChangeCountText.gameObject.SetActive(false);
+                    });
+                });
+            });
+        }
+
+        lastChipsCount = chipsCount;
+
+        // Update the PlayerPrefs and UI
         PlayerPrefs.SetInt("PlayerChipsCount", chipsCount);
         chamberManager.InitiateChambers();
         currentChipsCountText.text = chipsCount.ToString();
-
-        // Skip if no change
-        if (change == 0) return;
-
-        // Kill previous tweens for playerChipsChangeCountText
-        playerChipsChangeCountText.DOKill();
-
-        // Update and display the change text
-        playerChipsChangeCountText.text = change > 0 ? $"+{change}" : $"{change}";
-        playerChipsChangeCountText.color = change > 0 ? Color.green : Color.red;
-        if (chipsForBoard) playerChipsChangeCountText.color = Color.yellow;
-
-        playerChipsChangeCountText.gameObject.SetActive(true); // Activate the text
-        playerChipsChangeCountText.DOFade(0, 0).OnComplete(() =>
-        {
-            playerChipsChangeCountText.DOFade(1, 0.3f) // Fade in
-                .OnComplete(() =>
-                {
-                    DOVirtual.DelayedCall(3, () =>
-                    {
-                        playerChipsChangeCountText.DOFade(0, 0.3f) // Fade out
-                            .OnComplete(() =>
-                            {
-                                playerChipsChangeCountText.gameObject.SetActive(false);
-                            });
-                    });
-                });
-        });
     }
-
-
-
 }

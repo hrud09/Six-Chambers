@@ -34,7 +34,7 @@ public class PokerEvaluator : MonoBehaviour
     public PlayerEconomyManager playerEconomyManager;
     public Chamber winningChamber;
 
-    public Button revealButton;
+   // public Button revealButton;
     public TMP_Text revealText;
     public RectTransform autoTextRect;
 
@@ -47,15 +47,15 @@ public class PokerEvaluator : MonoBehaviour
     private void Start()
     {
 
-        revealButton.enabled = false;
+        //revealButton.enabled = false;
     }
 
     public void CallForRevealAction()
     {
         TutorialManager.Instance.ShowTutorial(TutorialType.RevealAllHand);
         ReadyToRevealChamberCards = true;
-        revealButton.enabled = true;
-    }
+       //
+       }
 
     /* public void RevealBoardCards()
      {
@@ -173,11 +173,15 @@ public class PokerEvaluator : MonoBehaviour
         }
         else
         {
+           // string winingText = GetWinType(handValue);
             foreach (var chamber in winningChambers)
             {
+                chamber.chamberUI.rankTextBG.color = winLoseColors[0];
                 chamber.chamberUI.rankText.fontSize = 0.65f;
             }
-            winText.text = "Tie: Multiple Winners";
+            HighlightWinningHand(winningChambers[0], handValue, cardsOnBoard);
+            playerHandManager.CheckSelectedChamber(winningChambers[0], rankwisePoints[handValue - 1]);
+            // winText.text = "Tie: Multiple Winners";
         }
     }
 

@@ -45,7 +45,6 @@ public class CardManager : MonoBehaviour
 
     public PokerEvaluator pokerEvaluator;
 
-
     private bool cardsDistributedToChambers;
 
     public Transform[] deckCards;
@@ -115,13 +114,13 @@ public class CardManager : MonoBehaviour
             chamber.chamberCards.Add(card1.GetComponent<Card>());
             Vector3 pos1 = Vector3.zero;
             chamber.InitializeOriginalPositions();
-            if (i <= 5) pos1.z = +0.5f;
+            if (i > 5) pos1.z = -0.5f;
 
 
-            if (i <= 5) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -20, 180));
-            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 180));
+            if (i <= 5) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -18f + (6 * i), 0));
+            else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 0));
 
-            card1.transform.DOLocalMove(pos1, 1f).SetEase(Ease.InOutQuad);
+            card1.transform.DOLocalJump(pos1,2f, 1, 1f).SetEase(Ease.InOutQuad);
             yield return new WaitForSeconds(0.2f);
         }
         yield return new WaitForSeconds(1f);
@@ -139,14 +138,14 @@ public class CardManager : MonoBehaviour
         for (int i = 0; i < boardManager.boardCardParents.Length - 2; i++)
         {
             CardInfo cardInfo = DrawRandomCard();
-            Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 180), boardManager.boardCardParents[i]).GetComponent<Card>();
+            Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 0), boardManager.boardCardParents[i]).GetComponent<Card>();
             card.InitiateCard(cardInfo, i < 3);
 
             Vector3 pos = boardManager.boardCardParents[i].position;
             boardManager.cardsOnBoard.Add(card);
             boardManager.cards.Add(card);
             int index = i;
-            card.transform.DOMove(pos, 1f).OnComplete(() =>
+            card.transform.DOJump(pos, 2f, 1, 1f).OnComplete(() =>
             {
 
             });
@@ -155,20 +154,20 @@ public class CardManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1);
-      
+
         // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
         chamberManager.PlayHandChoosingAnimation();
     }
     public void DrawAnotherCardOnBoard()
     {
         CardInfo cardInfo = DrawRandomCard();
-        Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 180), boardManager.boardCardParents[boardManager.cardsOnBoard.Count]).GetComponent<Card>();
+        Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 0), boardManager.boardCardParents[boardManager.cardsOnBoard.Count]).GetComponent<Card>();
         card.InitiateCard(cardInfo, true);
 
         Vector3 pos = boardManager.boardCardParents[boardManager.cardsOnBoard.Count].position;
         boardManager.cardsOnBoard.Add(card);
         boardManager.cards.Add(card);
-        card.transform.DOMove(pos, 1f).OnComplete(() =>
+        card.transform.DOJump(pos, 2f, 1, 1f).OnComplete(() =>
         {
 
         });
@@ -213,29 +212,29 @@ public class CardManager : MonoBehaviour
     void MouseDownAction()
     {
 
-            if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
+        if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
+        {
+            DrawAnotherCardOnBoard();
+            if (boardManager.cardsOnBoard.Count == 5)
             {
-                DrawAnotherCardOnBoard();
-                if (boardManager.cardsOnBoard.Count == 5)
-                {
 
-                    pokerEvaluator.CallForRevealAction();
+                pokerEvaluator.CallForRevealAction();
 
-                }
-            }
-            else if (!cardsDistributedToChambers)
-            {
-                cardsDistributedToChambers = true;
-                DrawCardsForChambers();
-
-
-            }
-            else if (boardManager.cardsOnBoard.Count < 1)
-            {
-                DrawCardsOnBoard();
             }
         }
-    
+        else if (!cardsDistributedToChambers)
+        {
+            cardsDistributedToChambers = true;
+            DrawCardsForChambers();
+
+
+        }
+        else if (boardManager.cardsOnBoard.Count < 1)
+        {
+            DrawCardsOnBoard();
+        }
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space)) MouseDownAction();

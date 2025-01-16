@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,4 +31,6 @@ public class Card : MonoBehaviour
     {
         if(topCardsAura) topCardsAura.SetActive(true);
     }
+
+
 }

@@ -9,6 +9,7 @@ public class Chamber : MonoBehaviour
 {
     // Core Dependencies
     public int chamberIndex;
+    public TMP_Text chamberNumberText;
     private ChamberManager chamberManager;
     public ChamberUIScript chamberUI;
     private PokerEvaluator pokerEvaluator;
@@ -23,28 +24,17 @@ public class Chamber : MonoBehaviour
     private List<Tween> cardTweens = new List<Tween>();
     public GameObject layerSelectionAura;
 
-    // Chips System
-    [Header("Chips System")]
-    public int initialChipsCount, currentChipsCount;
 
-
+    [Header("Bullet Area")]
+    public GameObject bulletObject;
+    public Transform bulletParent;
+    public Transform bulletMark;
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();
         pokerEvaluator = FindObjectOfType<PokerEvaluator>();
+        chamberNumberText.text = chamberIndex.ToString();
     }
-
-    void Start()
-    {
-        //  yield return new WaitForEndOfFrame();
-        currentChipsCount = PlayerPrefs.GetInt($"{chamberIndex}_ChamberChipsCount", initialChipsCount);
-
-
-        UpdateChipsCount();
-    }
-
-    // Card Positioning
-
     public void InitializeOriginalPositions()
     {
         layerSelectionAura = chamberCards[0].playerSelectionAura;
@@ -65,6 +55,7 @@ public class Chamber : MonoBehaviour
         if (chamberManager.playerHandManager.playerChosenChamber == null && chamberManager.playerHandManager.playersTurn)
         {
             chamberManager.playerHandManager.SelectPlayerChamber(this);
+            LowerCards();
         }
         else if (pokerEvaluator.ReadyToRevealChamberCards)
         {
@@ -86,16 +77,30 @@ public class Chamber : MonoBehaviour
     private void RevealHand()
     {
         handRevealed = true;
-        chamberCards[0].transform
-            .DOLocalRotate(Vector3.zero, 0.5f)
-            .OnComplete(() => {
 
-                chamberCards[0].backFaceRend.enabled = false;
-                chamberCards[0].frontFaceRend.enabled = true;
-                chamberCards[0].transform.DOLocalMoveZ(1.3f, 0.2f);
-                pokerEvaluator.CheckHand(this);
-                if (chamberManager.AllHandRevealed()) pokerEvaluator.CheckPokerLogics();
-            });
+        Transform card1 = chamberCards[0].transform;
+        Transform card2 = chamberCards[1].transform;
+
+        card1.DOLocalMoveX(1f, 0.4f);
+        card1.DOLocalRotate(Vector3.up * 20f, 0.4f).OnComplete(
+            () =>
+            {
+
+                card1.DOLocalMoveX(0.5f, 0.4f);
+                card1.DOLocalRotate(Vector3.down * -20, 0.2f).SetEase(Ease.OutQuad)
+          .OnComplete(() =>
+          {
+
+              chamberCards[0].backFaceRend.enabled = false;
+              chamberCards[0].frontFaceRend.enabled = true;
+              card1.DOLocalMoveZ(0.2f, 0.5f).SetEase(Ease.OutBounce);
+              pokerEvaluator.CheckHand(this);
+              if (chamberManager.AllHandRevealed()) pokerEvaluator.CheckPokerLogics();
+          });
+            }
+
+            );
+
     }
     private void OnMouseOver()
     {
@@ -119,24 +124,30 @@ public class Chamber : MonoBehaviour
     // Card Lift/Lower
     public void LiftCards()
     {
+        if (chamberCards.Count < 2) return;
         KillCardTweens();
-        for (int i = 0; i < chamberCards.Count; i++)
-        {
+        cardTweens.Add(chamberCards[0].transform.DOLocalMoveX(0.5f - (0.2f * (chamberIndex - 1)), 0.15f));
+        cardTweens.Add(chamberCards[1].transform.DOLocalMoveY(1f, 0.15f).OnComplete(() => { 
+        
 
-                cardTweens.Add(chamberCards[i].transform.DOLocalMoveY(1.5f, 0.15f));
-          
-        }
+        cardTweens.Add(chamberCards[1].transform.DOLocalMoveY(1.5f, 0.6f).SetLoops(-1, LoopType.Yoyo));
+        
+        }));
+        cardTweens.Add(chamberCards[1].transform.DOLocalRotate(Vector3.right * - 15 + Vector3.up *( - 18 + (7.2f * (chamberIndex - 1))), 0.25f));
+        cardTweens.Add(chamberCards[1].transform.DOLocalMoveX(-0.125f + (0.05f * (chamberIndex - 1)), 0.15f));
+        cardTweens.Add(bulletMark.DOScale(Vector3.one * 1.5f, 0.6f).SetLoops(-1, LoopType.Yoyo));
     }
 
     public void LowerCards()
     {
+        if (chamberCards.Count < 2) return;
         KillCardTweens();
-        for (int i = 0; i < chamberCards.Count; i++)
-        {
 
-                cardTweens.Add(chamberCards[i].transform.DOLocalMoveY(0, 0.2f));
-            
-        }
+        cardTweens.Add(chamberCards[0].transform.DOLocalMoveX(0, 0.2f));
+        cardTweens.Add(chamberCards[1].transform.DOLocalMoveY(0, 0.2f));
+        cardTweens.Add(chamberCards[1].transform.DOLocalRotate(Vector3.zero, 0.2f));
+        cardTweens.Add(chamberCards[1].transform.DOLocalMoveX(0, 0.2f));
+        cardTweens.Add(bulletMark.DOScale(Vector3.one, 0.8f));
     }
 
     private void KillCardTweens()
@@ -148,28 +159,5 @@ public class Chamber : MonoBehaviour
         cardTweens.Clear();
     }
 
-    // Chips Count Update
-    public void UpdateChipsCount()
-    {
 
-        PlayerPrefs.SetInt($"{chamberIndex}_ChamberChipsCount", currentChipsCount);
-        chamberUI.chipsCountText.text = currentChipsCount.ToString();
-    }
-
-    public void UpdateChipsChangeText(int changeAmount, Color textColor)
-    {
-        chamberUI.changeAmountParent.SetActive(true);
-        chamberUI.chipChangeAmountText.DOFade(1, 1f);
-        if (textColor != Color.yellow)
-        {
-            if (changeAmount > 0) chamberUI.chipChangeAmountText.text = "+" + changeAmount.ToString();
-            else chamberUI.chipChangeAmountText.text = changeAmount.ToString();
-        }
-        else
-        {
-            if (changeAmount < 0) chamberUI.chipChangeAmountText.text = (MathF.Abs(changeAmount)).ToString();
-            else chamberUI.chipChangeAmountText.text = changeAmount.ToString();
-        }
-        chamberUI.chipChangeAmountText.color = textColor;
-    }
 }

@@ -1,7 +1,9 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ChamberManager : MonoBehaviour
 {
@@ -88,5 +90,29 @@ public class ChamberManager : MonoBehaviour
         TutorialManager.Instance.ShowTutorial(TutorialType.PlayersTurn);
         yield return new WaitForSeconds(0.2f);
         playerHandManager.playersTurn = true;
+    }
+}
+
+[System.Serializable]
+public class ChamberUIScript
+{
+    public GameObject playerSelectionVisualUI;
+    public GameObject rangerSelectionVisualUI;
+    public GameObject winningHandVisualUI;
+
+
+    [Header("Hand Rank")]
+    public CanvasGroup rankUICanvasGroup;
+    public Image rankTextBG;
+
+    public TMP_Text rankText;
+
+    public Color[] availablityColors;
+    public Image[] topFiveCards;
+
+
+    public void PaintTopCards()
+    {
+
     }
 }

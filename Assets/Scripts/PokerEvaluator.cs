@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class PokerEvaluator : MonoBehaviour
 {
+
+    public static PokerEvaluator Instance;
     string GetWinType(int handValue)
     {
         return handValue switch
@@ -25,7 +27,6 @@ public class PokerEvaluator : MonoBehaviour
         };
     }
 
-    public TMP_Text winText;
     public CardManager cardManager;
     public BoardManager boardManager;
     public ChamberManager chamberManager;
@@ -34,79 +35,24 @@ public class PokerEvaluator : MonoBehaviour
     public PlayerEconomyManager playerEconomyManager;
     public Chamber winningChamber;
 
-   // public Button revealButton;
-    public TMP_Text revealText;
-    public RectTransform autoTextRect;
 
     [Header("Winning Hand Display")]
-    public TMP_Text winningHandText;
-    //public GameObject winningHandShowBG;
     public Transform[] topCardParents;
     public Color[] winLoseColors;
     public bool ReadyToRevealChamberCards;
-    private void Start()
+    private void Awake()
     {
-
-        //revealButton.enabled = false;
+        if (Instance == null) Instance = this;
     }
+
 
     public void CallForRevealAction()
     {
         TutorialManager.Instance.ShowTutorial(TutorialType.RevealAllHand);
         ReadyToRevealChamberCards = true;
-       //
-       }
 
-    /* public void RevealBoardCards()
-     {
-         revealButton.enabled = false;
-         winningHandText.text = "Working...";
-         for (int i = 3; i < boardManager.cardsOnBoard.Count; i++)
-         {
-             int index = i;
-             boardManager.cardsOnBoard[i].transform
-                 .DOLocalRotate(Vector3.zero, 0.5f)
-                 .SetDelay(0.2f)
-                 .OnComplete(() =>
-                 {
-                     boardManager.cardsOnBoard[i].cardBackSpriteRend.enabled = false;
-                     boardManager.cardsOnBoard[i].cardFaceSpriteRend.enabled = true;
-                     if (index == boardManager.cardsOnBoard.Count - 1)
-                         StartCoroutine(RevealHandCards());
-                 });
-         }
-     }*/
-
-    public void RevealAllHandCardsAtOnce()
-    {
-        TutorialManager.Instance.ShowTutorial(TutorialType.ShowDown);
-        StartCoroutine(RevealHandCards());
-    }
-    private IEnumerator RevealHandCards()
-    {
-        foreach (var chamber in chamberManager.chambers)
-        {
-            int index = chamberManager.chambers.IndexOf(chamber);
-            chamber.chamberCards[0].transform
-                .DOLocalRotate(Vector3.zero, 0.5f)
-                .OnComplete(() => {
-                   /* chamber.chamberCards[0].cardBackSpriteRend.enabled = false;
-
-                    chamber.chamberCards[0].cardFaceSpriteRend.enabled = true;*/
-                    chamber.chamberCards[0].transform.DOLocalMoveZ(1.3f, 0.2f);
-                    CheckHand(chamber);
-
-                });
-            yield return new WaitForSeconds(0.5f);
-        }
-        CheckPokerLogics();
     }
 
-    public void RevealRandomChambersSecondCard()
-    {
-        Chamber chamber = chamberManager.chambers[Random.Range(0, chamberManager.chambers.Count)];
-        chamber.chamberCards[1].transform.DOLocalRotate(Vector3.zero, 0.5f);
-    }
 
     public void CheckHand(Chamber chamber)
     {
@@ -117,6 +63,7 @@ public class PokerEvaluator : MonoBehaviour
         chamber.chamberUI.rankUICanvasGroup.alpha = 1;
         chamber.chamberUI.rankText.enabled = true;
         chamber.chamberUI.rankText.text = GetWinType(evaluation.HandValue);
+        chamber.PaintTopCards(evaluation.HighValueCards);
 
         if (chamber == playerHandManager.playerChosenChamber)
             playerEconomyManager.UpdateCredit(rankwisePoints[evaluation.HandValue - 1]);
@@ -160,7 +107,7 @@ public class PokerEvaluator : MonoBehaviour
         winner.chamberUI.rankTextBG.color = winLoseColors[0];
         HighlightWinningHand(winner, handValue, cardsOnBoard);
         playerHandManager.CheckSelectedChamber(winner, rankwisePoints[handValue - 1]);
-        winText.text = $"Winner: {winner.chamberIndex} : {GetWinType(handValue)}";
+       // winText.text = $"Winner: {winner.chamberIndex} : {GetWinType(handValue)}";
     }
 
     void HandleTieBreaker(List<Chamber> tiedChambers, int handValue, List<Card> cardsOnBoard)
@@ -169,7 +116,7 @@ public class PokerEvaluator : MonoBehaviour
         if (winningChambers.Count == 1)
         {
             HandleSingleWinner(winningChambers[0], handValue, cardsOnBoard);
-            winText.text = $"{winningChambers[0].chamberIndex} Wins by Tie-Breaker.";
+           // winText.text = $"{winningChambers[0].chamberIndex} Wins by Tie-Breaker.";
         }
         else
         {

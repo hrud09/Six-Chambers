@@ -22,13 +22,14 @@ public class Chamber : MonoBehaviour
 
     private Vector3[] originalPositions;
     private List<Tween> cardTweens = new List<Tween>();
-    public GameObject layerSelectionAura;
+    private GameObject playerSelectionAura;
 
 
     [Header("Bullet Area")]
     public GameObject bulletObject;
     public Transform bulletParent;
     public Transform bulletMark;
+    public ParticleSystem bulletSpawnVFX, bulletDeactivateVFX;
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();
@@ -37,7 +38,7 @@ public class Chamber : MonoBehaviour
     }
     public void InitializeOriginalPositions()
     {
-        layerSelectionAura = chamberCards[0].playerSelectionAura;
+        playerSelectionAura = chamberCards[0].playerSelectionAura;
         originalPositions = new Vector3[chamberCards.Count];
         for (int i = 0; i < chamberCards.Count; i++)
         {
@@ -47,7 +48,11 @@ public class Chamber : MonoBehaviour
             }
         }
     }
-
+    public void SpawnBullet()
+    {
+        bulletSpawnVFX.Play();
+        bulletObject.SetActive(true);
+    }
     // Mouse Events
 
     private void OnMouseDown()
@@ -66,7 +71,7 @@ public class Chamber : MonoBehaviour
     {
         if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn/* && !chamberManager.playerHandManager.mouseOverChambers*/)
         {
-            layerSelectionAura.SetActive(true);
+            playerSelectionAura.SetActive(true);
             chamberManager.playerHandManager.mouseOverChambers = true;
            
             LiftCards();
@@ -85,7 +90,6 @@ public class Chamber : MonoBehaviour
         card1.DOLocalRotate(Vector3.up * 20f, 0.4f).OnComplete(
             () =>
             {
-
                 card1.DOLocalMoveX(0.5f, 0.4f);
                 card1.DOLocalRotate(Vector3.down * -20, 0.2f).SetEase(Ease.OutQuad)
           .OnComplete(() =>
@@ -106,7 +110,7 @@ public class Chamber : MonoBehaviour
     {
         if (!chamberManager.playerHandManager.chamberSelected && chamberManager.playerHandManager.playersTurn && !chamberManager.playerHandManager.mouseOverChambers)
         {
-            //  layerSelectionAura.SetActive(true);
+            //  playerSelectionAura.SetActive(true);
             //  chamberManager.playerHandManager.mouseOverChambers = true;
             // LiftCards();
         }
@@ -115,7 +119,7 @@ public class Chamber : MonoBehaviour
     private void OnMouseExit()
     {
 
-        if (chamberManager.playerHandManager.chamberSelected != this) layerSelectionAura.SetActive(false);
+        if (chamberManager.playerHandManager.chamberSelected != this) playerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
 
         LowerCards();
@@ -159,5 +163,41 @@ public class Chamber : MonoBehaviour
         cardTweens.Clear();
     }
 
+    public void PaintTopCards(List<Card> cards)
+    {
 
+        StartCoroutine(PaintTopCardsDelay(cards));
+    }
+
+    private IEnumerator PaintTopCardsDelay(List<Card> cards)
+    {
+        for (int i = 0; i < chamberUI.topFiveCards.Length; i++)
+        {
+            chamberUI.topFiveCards[i].enabled = true;
+            chamberUI.topFiveCards[i].sprite = cards[i].cardInfo.cardTexture;
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+
+    public void ResetChamber()
+    {
+        chamberUI.rankText.enabled = false;
+        chamberUI.rankUICanvasGroup.alpha = 0;
+        for (int i = 0; i < chamberUI.topFiveCards.Length; i++)
+        {
+            chamberUI.topFiveCards[i].enabled = false;
+        }
+        bulletObject.transform.SetParent(bulletParent);
+        bulletObject.transform.localPosition = Vector3.zero;
+        bulletObject.transform.localRotation = Quaternion.identity;
+        bulletDeactivateVFX.Play();
+        bulletObject.SetActive(false);
+        chamberCards.Clear();
+        foreach (var item in cardTweens)
+        {
+            item.Kill();
+        }
+        cardTweens.Clear();
+        playerSelectionAura = null;
+    }
 }

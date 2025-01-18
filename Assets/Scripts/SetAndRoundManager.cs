@@ -55,14 +55,15 @@ public class SetAndRoundManager : MonoBehaviour
         SaveProgress();
         float count = 5f;
         DOTween.To(() => count, x => count = x, 0f, 5).OnComplete(() => {
-                NextRound();
+                ShowNextRoundStarter();
             });
         
     }
 
-    public void NextRound()
+    public void ShowNextRoundStarter()
     {
-        playerHandManager.gameManager.RestartGameForLoadingNextLevel();
+        TutorialManager.Instance.ShowTutorial(TutorialType.NextRoundStarter);
+
     }
 
     void PromoteToNextSet()

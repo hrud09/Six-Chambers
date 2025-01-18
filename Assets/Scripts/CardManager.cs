@@ -48,6 +48,7 @@ public class CardManager : MonoBehaviour
     private bool cardsDistributedToChambers;
 
     public Transform[] deckCards;
+
     void Start()
     {
         // Initialization and card drawing routines
@@ -120,10 +121,11 @@ public class CardManager : MonoBehaviour
             if (i <= 5) card1.transform.localRotation = Quaternion.Euler(new Vector3(0, -18f + (6 * i), 0));
             else card1.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 0));
 
-            card1.transform.DOLocalJump(pos1,2f, 1, 1f).SetEase(Ease.InOutQuad);
+            card1.transform.DOLocalJump(pos1, 2f, 1, 1f).SetEase(Ease.InOutQuad);
             yield return new WaitForSeconds(0.2f);
         }
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.3f);
+        
         TutorialManager.Instance.ShowTutorial(TutorialType.DealCardsOnTable);
     }
 
@@ -153,10 +155,14 @@ public class CardManager : MonoBehaviour
             yield return new WaitForSeconds(0.2f);
         }
 
-        yield return new WaitForSeconds(1);
-
-        // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
         chamberManager.PlayHandChoosingAnimation();
+        foreach (var chamber in chamberManager.chambers)
+        {
+            yield return new WaitForSeconds(0.2f);
+            chamber.SpawnBullet();
+        }
+        // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
     }
     public void DrawAnotherCardOnBoard()
     {
@@ -169,7 +175,12 @@ public class CardManager : MonoBehaviour
         boardManager.cards.Add(card);
         card.transform.DOJump(pos, 2f, 1, 1f).OnComplete(() =>
         {
+            if (boardManager.cardsOnBoard.Count == 5)
+            {
+               
+                pokerEvaluator.CallForRevealAction();
 
+            }
         });
 
     }
@@ -211,32 +222,79 @@ public class CardManager : MonoBehaviour
     }
     void MouseDownAction()
     {
-
-        if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
-        {
-            DrawAnotherCardOnBoard();
-            if (boardManager.cardsOnBoard.Count == 5)
-            {
-
-                pokerEvaluator.CallForRevealAction();
-
-            }
-        }
-        else if (!cardsDistributedToChambers)
+        if (!cardsDistributedToChambers)
         {
             cardsDistributedToChambers = true;
             DrawCardsForChambers();
-
-
         }
         else if (boardManager.cardsOnBoard.Count < 1)
         {
             DrawCardsOnBoard();
+        }
+         
+        else if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
+        {
+            DrawAnotherCardOnBoard();
+
+        }
+        
+        else if (boardManager.cardsOnBoard.Count == 5 && !chamberManager.allChambersCardsRevealed) {
+
+           
+            chamberManager.RevealAllHandCardsAtOnce();
+        }
+        else if ((boardManager.cardsOnBoard.Count == 5 && chamberManager.allChambersCardsRevealed))
+        {
+
+            CollectAllCards();
         }
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space)) MouseDownAction();
+    }
+
+    public void CollectAllCards()
+    {
+        StartCoroutine(CollectAllCardsWithDelay());
+    }
+
+    private IEnumerator CollectAllCardsWithDelay()
+    {
+
+        foreach (Chamber chamber in chamberManager.chambers)
+        {
+            for (int i = 0; i < chamber.chamberCards.Count; i++)
+            {
+                Transform card = chamber.chamberCards[i].transform;
+                card.DOMove(cardSpawnPos.position, 0.5f).SetEase(Ease.Linear).OnComplete(()=> Destroy(card.gameObject));
+            }
+            yield return new WaitForSeconds(0.2f);
+        }
+        foreach (Card card in boardManager.cardsOnBoard)
+        {
+            GameObject cardObject = card.gameObject;
+            card.transform.DOMove(cardSpawnPos.position, 0.5f).SetEase(Ease.Linear).OnComplete(() => Destroy(cardObject));
+        }
+     
+        yield return new WaitForSeconds(0.1f);
+
+        rangerManager.chamberSelected = false;
+        playerManager.chamberSelected = false;
+        playerManager.playersTurn = false;
+        rangerManager.rangerSelectedChamber = null;
+        playerManager.playerChosenChamber = null;
+        cardsDistributedToChambers = false;
+        boardManager.cardsOnBoard.Clear();
+        tempDeck.Clear();
+        cardsInHands.Clear();
+        cardsOnHands.Clear();
+       
+        tempDeck = cardsInDeck;
+        foreach (var item in chamberManager.chambers)
+        {         
+            item.ResetChamber();
+        }
     }
 }

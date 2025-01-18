@@ -58,5 +58,6 @@ public enum TutorialType {
     RangersTurn,
     DealNextCard,
     RevealAllHand,
-    ShowDown
+    ShowDown,
+    NextRoundStarter
 }

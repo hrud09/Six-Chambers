@@ -17,8 +17,7 @@ public class ChamberManager : MonoBehaviour
     public float totalSelectionTime; // Total time for the selection process
     public float initialDelay; // Initial delay between each selection
 
-    public GameObject chipPrefab;
-
+    public bool allChambersCardsRevealed;
     private void Awake()
     {
         InitiateChambers();
@@ -37,13 +36,45 @@ public class ChamberManager : MonoBehaviour
         StartCoroutine(PickRangerHandCoroutine());
     }
 
+
+    public void RevealAllHandCardsAtOnce()
+    {
+        TutorialManager.Instance.ShowTutorial(TutorialType.ShowDown);
+        StartCoroutine(RevealHandCards());
+    }
+    private IEnumerator RevealHandCards()
+    {
+        foreach (var chamber in chambers)
+        {
+            int index = chambers.IndexOf(chamber);
+            chamber.chamberCards[0].transform
+                .DOLocalRotate(Vector3.zero, 0.5f)
+                .OnComplete(() => {
+                    chamber.chamberCards[0].backFaceRend.enabled = false;
+
+                     chamber.chamberCards[0].frontFaceRend.enabled = true;
+                     chamber.chamberCards[0].transform.DOLocalMoveZ(0.8f, 0.2f);
+                     PokerEvaluator.Instance.CheckHand(chamber);
+
+                });
+            yield return new WaitForSeconds(0.5f);
+        }
+        PokerEvaluator.Instance.CheckPokerLogics();
+
+        yield return new WaitForSeconds(0.5f);
+        allChambersCardsRevealed = true;
+    }
+
     private IEnumerator PickRangerHandCoroutine()
     {
+        //Pre ranger selection
+
         float elapsedTime = 0.0f;
         int currentIndex = 0;
         int totalChambers = chamberTransforms.Length;
         totalSelectionTime = Random.Range(3f, 4f);
         initialDelay = Random.Range(0.18f, 0.22f);
+        yield return new WaitForSeconds(2f);
         while (elapsedTime < totalSelectionTime)
         {
             rangerChosenChamber = chamberTransforms[currentIndex].GetComponent<Chamber>();
@@ -106,13 +137,8 @@ public class ChamberUIScript
     public Image rankTextBG;
 
     public TMP_Text rankText;
-
-    public Color[] availablityColors;
     public Image[] topFiveCards;
 
 
-    public void PaintTopCards()
-    {
-
-    }
+    
 }

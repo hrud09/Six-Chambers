@@ -26,10 +26,14 @@ public class Chamber : MonoBehaviour
 
 
     [Header("Bullet Area")]
-    public GameObject bulletObject;
-    public Transform bulletParent;
-    public Transform bulletMark;
+    public GameObject bulletPrefab;
+    public Transform[] bulletParents;
+    public int minimumBulletCount;
+    public int maxBulletCount;
+    public List<GameObject> currentBullets;
     public ParticleSystem bulletSpawnVFX, bulletDeactivateVFX;
+
+    public GameObject WinOrLoseSelectionPopUp;
     private void Awake()
     {
         chamberManager = GetComponentInParent<ChamberManager>();
@@ -47,12 +51,40 @@ public class Chamber : MonoBehaviour
                 originalPositions[i] = chamberCards[i].transform.position;
             }
         }
+
+        AddOneBullet();
     }
-    public void SpawnBullet()
+    public void AddOneBullet()
     {
-        bulletSpawnVFX.Play();
-        bulletObject.SetActive(true);
+        StartCoroutine(AddBulletWithDelay());
     }
+
+    private IEnumerator AddBulletWithDelay()
+    {
+        if (currentBullets.Count < maxBulletCount)
+        {
+            yield return new WaitForSeconds(4f);
+            GameObject newBullet = Instantiate(bulletPrefab, bulletParents[currentBullets.Count - 1]);
+            bulletSpawnVFX.gameObject.transform.position = bulletParents[currentBullets.Count - 1].position;
+            currentBullets.Add(newBullet);
+            bulletSpawnVFX.Play();
+        }
+    }
+    public GameObject GetABullet()
+    {
+        GameObject bullet = currentBullets[0];
+
+        currentBullets.Remove(bullet);
+        return bullet;
+    }
+    public void SetWinLosePrediction(int win = 1)
+    {
+        chamberManager.winOrLoseSelectionInt = win;
+        chamberManager.winLosePredicted = true;
+        TutorialManager.Instance.ShowTutorial(TutorialType.DealNextCard);
+        WinOrLoseSelectionPopUp.SetActive(false);
+    }
+
     // Mouse Events
 
     private void OnMouseDown()
@@ -118,7 +150,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseExit()
     {
-
+        if (chamberCards.Count == 0) return;
         if (chamberManager.playerHandManager.chamberSelected != this) playerSelectionAura.SetActive(false);
         chamberManager.playerHandManager.mouseOverChambers = false;
 
@@ -139,7 +171,7 @@ public class Chamber : MonoBehaviour
         }));
         cardTweens.Add(chamberCards[1].transform.DOLocalRotate(Vector3.right * - 15 + Vector3.up *( - 18 + (7.2f * (chamberIndex - 1))), 0.25f));
         cardTweens.Add(chamberCards[1].transform.DOLocalMoveX(-0.125f + (0.05f * (chamberIndex - 1)), 0.15f));
-        cardTweens.Add(bulletMark.DOScale(Vector3.one * 1.5f, 0.6f).SetLoops(-1, LoopType.Yoyo));
+       // cardTweens.Add(bulletMark.DOScale(Vector3.one * 1.5f, 0.6f).SetLoops(-1, LoopType.Yoyo));
     }
 
     public void LowerCards()
@@ -151,7 +183,7 @@ public class Chamber : MonoBehaviour
         cardTweens.Add(chamberCards[1].transform.DOLocalMoveY(0, 0.2f));
         cardTweens.Add(chamberCards[1].transform.DOLocalRotate(Vector3.zero, 0.2f));
         cardTweens.Add(chamberCards[1].transform.DOLocalMoveX(0, 0.2f));
-        cardTweens.Add(bulletMark.DOScale(Vector3.one, 0.8f));
+       // cardTweens.Add(bulletMark.DOScale(Vector3.one, 0.8f));
     }
 
     private void KillCardTweens()
@@ -187,11 +219,7 @@ public class Chamber : MonoBehaviour
         {
             chamberUI.topFiveCards[i].enabled = false;
         }
-        bulletObject.transform.SetParent(bulletParent);
-        bulletObject.transform.localPosition = Vector3.zero;
-        bulletObject.transform.localRotation = Quaternion.identity;
-        bulletDeactivateVFX.Play();
-        bulletObject.SetActive(false);
+
         chamberCards.Clear();
         foreach (var item in cardTweens)
         {
@@ -199,5 +227,9 @@ public class Chamber : MonoBehaviour
         }
         cardTweens.Clear();
         playerSelectionAura = null;
+
+        chamberManager.rangerManager.sameChamberSelected = false;
+        chamberManager.winOrLoseSelectionInt = 0;
+        chamberManager.winLosePredicted = true;
     }
 }

@@ -18,6 +18,9 @@ public class ChamberManager : MonoBehaviour
     public float initialDelay; // Initial delay between each selection
 
     public bool allChambersCardsRevealed;
+
+    public bool winLosePredicted;
+    public int winOrLoseSelectionInt;
     private void Awake()
     {
         InitiateChambers();
@@ -35,7 +38,7 @@ public class ChamberManager : MonoBehaviour
     {
         StartCoroutine(PickRangerHandCoroutine());
     }
-
+   
 
     public void RevealAllHandCardsAtOnce()
     {

@@ -157,11 +157,7 @@ public class CardManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
         chamberManager.PlayHandChoosingAnimation();
-        foreach (var chamber in chamberManager.chambers)
-        {
-            yield return new WaitForSeconds(0.2f);
-            chamber.SpawnBullet();
-        }
+
         // chamberManager.playerHandManager.boardChipsCountObj.SetActive(true);
     }
     public void DrawAnotherCardOnBoard()
@@ -234,8 +230,11 @@ public class CardManager : MonoBehaviour
          
         else if (boardManager.cardsOnBoard.Count < 5 && playerManager.chamberSelected && rangerManager.chamberSelected)
         {
-            DrawAnotherCardOnBoard();
-
+            if (!rangerManager.sameChamberSelected || chamberManager.winLosePredicted)
+            {
+                DrawAnotherCardOnBoard();
+            }
+          
         }
         
         else if (boardManager.cardsOnBoard.Count == 5 && !chamberManager.allChambersCardsRevealed) {

@@ -1,4 +1,6 @@
 using DG.Tweening;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,24 +52,83 @@ public class PlayerManager : MonoBehaviour
     {
         if (playerChosenChamber == chamberManager.rangerChosenChamber)
         {
-            HandleLiveChamber(winningChamber);
+
+            if (chamberManager.winOrLoseSelectionInt == 1)
+            {
+                //Player predicted a WIN
+
+                if (winningChamber == playerChosenChamber)
+                {
+                    //Player predicted Right
+                    HandlePlayerWin(winningChamber.currentBullets.Count * 2);
+                }
+                else
+                {
+                    HandlePlayerLose(winningChamber.currentBullets.Count * 2);
+                }
+            }
+            else if (chamberManager.winOrLoseSelectionInt == 0)
+            {
+                //Player predicted a LOSE
+
+                if (winningChamber != playerChosenChamber)
+                {
+                    //Player predicted Right
+                    HandlePlayerWin(winningChamber.currentBullets.Count * 2);
+                }
+                else
+                {
+                    HandlePlayerLose(winningChamber.currentBullets.Count * 2);
+                }
+            }
+
+        }
+        else if (playerChosenChamber == winningChamber)
+        {
+
+            HandlePlayerWin(winningChamber.currentBullets.Count);
+
+        }
+        else if (chamberManager.rangerChosenChamber == winningChamber)
+        {
+
+            HandlePlayerLose(winningChamber.currentBullets.Count + playerChosenChamber.currentBullets.Count);
+
+
         }
         else
         {
-            HandlePlayerChosen(winningChamber);
+            HandlePlayerLose(playerChosenChamber.currentBullets.Count);
+        }
+
+
+        winningChamber.AddOneBullet();
+
+        setAndRoundManager.EndRound();
+    }
+    public void CheckSelectedChamber(List<Chamber> winningChambers, int point)
+    {
+        if (winningChambers.Contains(playerChosenChamber))
+        {
+            HandlePlayerWin(playerChosenChamber.currentBullets.Count);
+        }
+        else
+        {
+            HandlePlayerLose(playerChosenChamber.currentBullets.Count);
         }
 
         setAndRoundManager.EndRound();
     }
 
-    private void HandlePlayerChosen(Chamber winningChamber)
+    private void HandlePlayerWin(int giveDamageAmount)
     {
-        if (playerChosenChamber != winningChamber)
-        {
-            DistributeChipsToWinningChamber(winningChamber, 0);
-        }
+        chamberManager.rangerManager.TakeDamage(giveDamageAmount);
     }
 
+    private void HandlePlayerLose(int damageCount)
+    {
+        TakeDamage(damageCount);
+    }
     private void HandleLiveChamber(Chamber winningChamber)
     {
         if (winningChamber != playerChosenChamber)
@@ -78,16 +139,5 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private void DistributeChipsToWinningChamber(Chamber winningChamber, int chipsToAdd)
-    {
-        if (winningChamber != null)
-        {
-            Debug.Log($"Chips added to winning chamber: {winningChamber.name}");
-        }
-    }
-
-    private void UpdateChipsCount(bool chipsForBoard = false)
-    {
-        chamberManager.InitiateChambers();
-    }
+  
 }

@@ -82,7 +82,6 @@ public class PokerEvaluator : MonoBehaviour
             chamberCardsincRivver.AddRange(chamber.chamberCards);
 
             HandEvaluation evaluation = EvaluateHand(chamber, chamberCardsincRivver);
-            // winningChamber.chamberCardsincRivver = evaluation.HighValueCards;
 
             if (evaluation.HandValue > highestHandValue)
             {
@@ -105,9 +104,9 @@ public class PokerEvaluator : MonoBehaviour
     void HandleSingleWinner(Chamber winner, int handValue, List<Card> cardsOnBoard)
     {
         winner.chamberUI.rankTextBG.color = winLoseColors[0];
-        HighlightWinningHand(winner, handValue, cardsOnBoard);
+        //HighlightWinningHand(winner, handValue, cardsOnBoard);
         playerHandManager.CheckSelectedChamber(winner, rankwisePoints[handValue - 1]);
-       // winText.text = $"Winner: {winner.chamberIndex} : {GetWinType(handValue)}";
+      
     }
 
     void HandleTieBreaker(List<Chamber> tiedChambers, int handValue, List<Card> cardsOnBoard)
@@ -116,25 +115,21 @@ public class PokerEvaluator : MonoBehaviour
         if (winningChambers.Count == 1)
         {
             HandleSingleWinner(winningChambers[0], handValue, cardsOnBoard);
-           // winText.text = $"{winningChambers[0].chamberIndex} Wins by Tie-Breaker.";
         }
         else
         {
-           // string winingText = GetWinType(handValue);
             foreach (var chamber in winningChambers)
             {
                 chamber.chamberUI.rankTextBG.color = winLoseColors[0];
                 chamber.chamberUI.rankText.fontSize = 0.65f;
             }
-            HighlightWinningHand(winningChambers[0], handValue, cardsOnBoard);
-            playerHandManager.CheckSelectedChamber(winningChambers[0], rankwisePoints[handValue - 1]);
-            // winText.text = "Tie: Multiple Winners";
+            //HighlightWinningHand(winningChambers[0], handValue, cardsOnBoard);
+            playerHandManager.CheckSelectedChamber(winningChambers, rankwisePoints[handValue - 1]);
         }
     }
 
     void HighlightWinningHand(Chamber winningChamber, int handValue, List<Card> cardsOnBoard)
     {
-        //winningHandShowBG.SetActive(true);
 
         var winningHand = EvaluateHand(winningChamber, new List<Card>(cardsOnBoard.Concat(winningChamber.chamberCards)));
         int index = 0;

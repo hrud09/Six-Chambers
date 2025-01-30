@@ -16,10 +16,6 @@ public class ChamberManager : MonoBehaviour
 
     public float totalSelectionTime; // Total time for the selection process
     public float initialDelay; // Initial delay between each selection
-
-    public bool allChambersCardsRevealed;
-
-    public bool winLosePredicted;
     public int winOrLoseSelectionInt;
     private void Awake()
     {
@@ -36,6 +32,7 @@ public class ChamberManager : MonoBehaviour
     }
     public void PickRangersHand()
     {
+        GameManager.GetInstance().SetGameState(GameState.RangersTurn);
         StartCoroutine(PickRangerHandCoroutine());
     }
    
@@ -49,23 +46,14 @@ public class ChamberManager : MonoBehaviour
     {
         foreach (var chamber in chambers)
         {
-            int index = chambers.IndexOf(chamber);
-            chamber.chamberCards[0].transform
-                .DOLocalRotate(Vector3.zero, 0.5f)
-                .OnComplete(() => {
-                    chamber.chamberCards[0].backFaceRend.enabled = false;
+            if (!chamber.handRevealed)
+            {
 
-                     chamber.chamberCards[0].frontFaceRend.enabled = true;
-                     chamber.chamberCards[0].transform.DOLocalMoveZ(0.8f, 0.2f);
-                     PokerEvaluator.Instance.CheckHand(chamber);
+                chamber.RevealHand();
+                yield return new WaitForSeconds(0.5f);
 
-                });
-            yield return new WaitForSeconds(0.5f);
+            }
         }
-        PokerEvaluator.Instance.CheckPokerLogics();
-
-        yield return new WaitForSeconds(0.5f);
-        allChambersCardsRevealed = true;
     }
 
     private IEnumerator PickRangerHandCoroutine()
@@ -114,16 +102,17 @@ public class ChamberManager : MonoBehaviour
     {
         foreach (var item in chambers)
         {
-            item.LiftCards();
+           
+            item.chamberCards[1].RevealCard();
             yield return new WaitForSeconds(0.1f);
 
-            item.LowerCards();
+          
         }
 
         yield return new WaitForSeconds(0.1f);
         TutorialManager.Instance.ShowTutorial(TutorialType.PlayersTurn);
         yield return new WaitForSeconds(0.2f);
-        playerHandManager.playersTurn = true;
+        GameManager.GetInstance().SetGameState(GameState.PlayersTurn);
     }
 }
 

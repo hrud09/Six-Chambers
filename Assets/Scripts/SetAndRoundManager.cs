@@ -13,83 +13,59 @@ public class SetAndRoundManager : MonoBehaviour
     public int roundCount;
     public TMP_Text roundCountText;
 
-    // Fixed point quotas for each set
-    public int[] pointsQuotaSet;
+    public TMP_Text newRoundText;
 
-    public TMP_Text thisSetQuotaText;
-    public int pointsQuota;
     public PlayerManager playerHandManager;
+
+    public GameObject roundChangeUIObject;
     private void Awake()
     {
         
         LoadProgress();
-        SetPointsQuota();
-        UpdateSetCount();
-        UpdateRoundCount();
+        UpdateSet_RoundCount();
     }
     void Start()
     {
     }
 
-    void SetPointsQuota()
-    {
-        pointsQuota = pointsQuotaSet[currentSetNumber - 1];
-    }
-
-    void UpdateSetCount()
+    void UpdateSet_RoundCount()
     {
         setCountText.text = currentSetNumber.ToString();
-        //thisSetQuotaText.text =pointsQuota.ToString();
-    }
-
-    void UpdateRoundCount()
-    {
         roundCountText.text = roundCount.ToString();
     }
 
     public void EndRound()
     {
-        roundCount++;
-
-        // playerHandManager.gameManager.nextRoundButton.SetActive(true);
+        GameManager.GetInstance().SetGameState(GameState.RoundEnded);
         SaveProgress();
-        float count = 5f;
-        DOTween.To(() => count, x => count = x, 0f, 5).OnComplete(() => {
-                ShowNextRoundStarter();
-            });
-        
+        PlayRoundChangeAnimation();
+              
+      
     }
+    private void PlayRoundChangeAnimation()
+    {
+        roundChangeUIObject.SetActive(true);
+        roundCount++;
+        newRoundText.DOFade(1, 0.5f);
+        newRoundText.text =  "Round " + roundCount.ToString();
 
+        newRoundText.DOFade(0, 0.5f).SetDelay(2f).OnComplete(() =>
+        {
+          GameManager.GetInstance().SetGameState(GameState.DealingChamberCards);
+            ShowNextRoundStarter();
+            roundChangeUIObject.SetActive(false);
+        });
+    }
     public void ShowNextRoundStarter()
     {
         TutorialManager.Instance.ShowTutorial(TutorialType.NextRoundStarter);
-
-    }
-
-    void PromoteToNextSet()
-    {
-        currentSetNumber++;
-        PlayerPrefs.SetInt("currentSet", currentSetNumber);
-       // playerHandManager.currentSetPoint = 0;
-       // playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
-        SetPointsQuota();
-        roundCount = 0;
-        UpdateSetCount();
-        UpdateRoundCount();
-    }
-
-    void ResetRound()
-    {
-        roundCount = 0;
-       // playerHandManager.currentSetPoint = 0;
-       // playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
     }
 
     void SaveProgress()
     {
         PlayerPrefs.SetInt("currentSet", currentSetNumber);
         PlayerPrefs.SetInt("roundCount", roundCount);
-        PlayerPrefs.Save(); // Ensure data is saved
+        PlayerPrefs.Save();
     }
 
     void LoadProgress()
@@ -108,10 +84,7 @@ public class SetAndRoundManager : MonoBehaviour
         PlayerPrefs.DeleteKey("currentSet");
         PlayerPrefs.DeleteKey("roundCount");
         PlayerPrefs.Save();
-
-        SetPointsQuota();
-        UpdateSetCount();
-        UpdateRoundCount();
+        UpdateSet_RoundCount();
 
         //playerHandManager.pointText.text = playerHandManager.currentSetPoint.ToString();
     }

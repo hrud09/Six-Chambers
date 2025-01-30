@@ -3,18 +3,67 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;  // To restart the scene
 
+public enum GameState
+{
+    RoundStarted,
+    DealingChamberCards,
+    DealingBoardCards1,
+    PlayersTurn,
+    RangersTurn,
+    SameChamberSelected,
+    DealingBoardCards2,
+    RevealingChamberCards,
+    EvaluatingHands,
+    Dueling,
+    CollectingAllCards,
+    RoundEnded,
+    NoInputState
+}
 public class GameManager : MonoBehaviour
 {
+    private static GameManager Instance;
+    public GameState currentRoundState;
     private bool isPaused = false;
     public SetAndRoundManager setAndRoundManager;
-    public PlayerManager playerHandManager;
-    // Start is called before the first frame update
-    void Start()
+
+
+    private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
+    public static GameManager GetInstance()
+    {
+        return Instance;
+    }
+   
+    IEnumerator Start()
+    {
+        yield return new WaitForSeconds(0.1f);
+        SetGameState(GameState.DealingChamberCards);
+    }
+
+    public void SetGameState(GameState _currentRoundState)
+    {
+        currentRoundState = _currentRoundState;
+    }
+    public GameState GetCurrentGameState()
+    {
+        return currentRoundState;
+    }
+   
+    public void OnRoundEnd()
+    {
+       setAndRoundManager.EndRound();
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.P))
@@ -48,7 +97,6 @@ public class GameManager : MonoBehaviour
     {
         setAndRoundManager.ResetAll();
         PlayerPrefs.DeleteAll();
-        PlayerPrefs.SetInt("PlayerPoint", setAndRoundManager.pointsQuota);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

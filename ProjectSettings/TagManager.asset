@@ -11,18 +11,18 @@ TagManager:
   - 
   - Water
   - UI
+  - 
+  - Weapon
+  - 
+  - 
+  - 
+  - 
+  - 
+  - ChamberUI
+  - 
+  - 
+  - 
   - Card
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
   - 
   - 
   - 
@@ -43,4 +43,7 @@ TagManager:
     locked: 0
   - name: Card
     uniqueID: 1762525167
+    locked: 0
+  - name: ChamberUI
+    uniqueID: 485886961
     locked: 0

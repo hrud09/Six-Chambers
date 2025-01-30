@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9009745095780701860}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: VFXs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5077933919421686155}
   - component: {fileID: 3048361196351093440}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,7 +127,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7975208147867718546}
   - component: {fileID: 3405375617087839105}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -211,7 +211,7 @@ GameObject:
   m_Component:
   - component: {fileID: 155745641180405224}
   - component: {fileID: 6112727599915652648}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -265,7 +265,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8740974627740470434}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: GFXs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -302,8 +302,16 @@ PrefabInstance:
       value: Ranger Selection Aura
       objectReference: {fileID: 0}
     - target: {fileID: 1634042616012300, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
+      propertyPath: m_Layer
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 1634042616012300, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1947479586808960, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
+      propertyPath: m_Layer
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4888568240001456, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
       propertyPath: m_LocalScale.x
@@ -406,8 +414,16 @@ PrefabInstance:
       value: Player Selection Aura
       objectReference: {fileID: 0}
     - target: {fileID: 1634042616012300, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
+      propertyPath: m_Layer
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 1634042616012300, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1947479586808960, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
+      propertyPath: m_Layer
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4888568240001456, guid: 1fd0b4a9d5aa7e049a14955abe32d4c1, type: 3}
       propertyPath: m_LocalScale.x

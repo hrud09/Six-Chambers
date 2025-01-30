@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
-    public List<GameObject> cardsOnBoard;
-    public List<Card> cards;
+    public List<Card> cardsOnBoard;
     public int revealedCardCount;
 
     public Transform[] boardCardParents;

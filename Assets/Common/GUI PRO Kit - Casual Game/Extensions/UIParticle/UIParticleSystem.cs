@@ -2,7 +2,7 @@
 /// Sourced from - http://forum.unity3d.com/threads/free-script-particle-systems-in-ui-screen-space-overlay.406862/
 /// Updated by Zarlang with a more robust implementation, including TextureSheet annimation support
 
-namespace UnityEngine.UI.Extensions.CasualGame
+namespace UnityEngine.UI.Extensions
 {
 #if UNITY_5_3_OR_NEWER
     [ExecuteInEditMode]

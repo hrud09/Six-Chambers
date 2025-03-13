@@ -49,11 +49,12 @@ public class Power : MonoBehaviour
 
     private void ActivatePowerToUse()
     {
-       
-        if (GameplayManager.currentRoundState == GameState.PlayersTurn)
+
+        if (GameplayManager.GetInstance().GetCurrentGameState() == GameState.PlayersTurn)
         {
             if (powerManager.activePower == null)
             {
+                powerManager.HideOtherPowers(this);
                 powerManager.activePower = this;
                 if (powerInfo.powerType == PowerType.Crystal_Ball)
                 {
@@ -63,7 +64,7 @@ public class Power : MonoBehaviour
                 else
                 {
 
-                GameplayManager.currentRoundState = GameState.PowerInUse;
+                    GameplayManager.GetInstance().SetGameState(GameState.PowerInUse);
                 }
             }
         }
@@ -71,7 +72,7 @@ public class Power : MonoBehaviour
 
     private void GamblePowerToActivate()
     {
-        if (powerManager.choosenPowerToGamble == null && GameplayManager.currentRoundState == GameState.PlayersTurn)
+        if (powerManager.choosenPowerToGamble == null && GameplayManager.GetInstance().GetCurrentGameState() == GameState.PlayersTurn)
         {
             EconomyData economyData = GameManager.GetInstance().GetEconomyData();
             if (economyData != null)
@@ -79,6 +80,7 @@ public class Power : MonoBehaviour
 
                 if (economyData.coinCount >= powerInfo.powerCost)
                 {
+                    powerManager.HideOtherPowers(this);
                     PlayerEconomyManager.Instance.UpdateCredit(-powerInfo.powerCost);
                     powerManager.choosenPowerToGamble = this;
 

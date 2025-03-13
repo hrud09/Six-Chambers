@@ -58,6 +58,7 @@ public class RoundManager : MonoBehaviour
                     item.InitiatePower();
 
                 }
+                powerManager.UnhideAllPowers();
                 roundChangePopUp.DisableView();
                 GameplayManager.GetInstance().SetGameState(GameState.DealingChamberCards);
                 TutorialManager.Instance.ShowTutorial(TutorialType.NextRoundStarter);

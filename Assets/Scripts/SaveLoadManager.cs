@@ -4,149 +4,111 @@ using System.IO;
 
 public static class SaveLoadManager
 {
-    private const string preferenceDatafileName = "/preference.dat";
-    private const string economyDatafileName = "/economy.dat";
-    private const string playerDatafileName = "/playerData.dat";
-    private const string gameMetaDatafileName = "/gameMetaData.dat";
-    private const string powerDatafileName = "/powerData.dat";
+    private static string GetFilePath(string fileName)
+    {
+        return Path.Combine(Application.persistentDataPath, fileName);
+    }
 
     #region PREFERENCE_DATA
     public static void SavePreference(PreferenceData data)
     {
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream stream = new FileStream(Application.persistentDataPath + preferenceDatafileName, FileMode.Create);
-        bf.Serialize(stream, data);
-        stream.Close();
+        SaveData(data, GetFilePath("preference.dat"));
     }
 
     public static PreferenceData LoadPreferenceData()
     {
-        if (File.Exists(Application.persistentDataPath + preferenceDatafileName))
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream stream = new FileStream(Application.persistentDataPath + preferenceDatafileName, FileMode.Open);
-            PreferenceData data = bf.Deserialize(stream) as PreferenceData;
-            stream.Close();
-            return data;
-        }
-        else
-        {
-            BbsLog.LogError("Saved PreferenceData Not Found! Returning NULL!!");
-            return null;
-        }
-
+        return LoadData<PreferenceData>(GetFilePath("preference.dat"));
     }
     #endregion
-
 
     #region ECONOMY_DATA
     public static void SaveEconomyData(EconomyData data)
     {
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream stream = new FileStream(Application.persistentDataPath + economyDatafileName, FileMode.Create);
-        bf.Serialize(stream, data);
-        stream.Close();
+        SaveData(data, GetFilePath("economy.dat"));
     }
 
     public static EconomyData LoadEconomyDataData()
     {
-        if (File.Exists(Application.persistentDataPath + economyDatafileName))
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream stream = new FileStream(Application.persistentDataPath + economyDatafileName, FileMode.Open);
-            EconomyData data = bf.Deserialize(stream) as EconomyData;
-            stream.Close();
-            return data;
-        }
-        else
-        {
-            BbsLog.LogError("Saved EconomyData Not Found! Returning NULL!!");
-            return null;
-        }
-
+        return LoadData<EconomyData>(GetFilePath("economy.dat"));
     }
     #endregion
 
-    #region ECONOMY_DATA
+    #region PLAYER_DATA
     public static void SavePlayerData(PlayerData data)
     {
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream stream = new FileStream(Application.persistentDataPath + playerDatafileName, FileMode.Create);
-        bf.Serialize(stream, data);
-        stream.Close();
+        SaveData(data, GetFilePath("playerData.dat"));
     }
 
     public static PlayerData LoadPlayerDataData()
     {
-        if (File.Exists(Application.persistentDataPath + playerDatafileName))
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream stream = new FileStream(Application.persistentDataPath + playerDatafileName, FileMode.Open);
-            PlayerData data = bf.Deserialize(stream) as PlayerData;
-            stream.Close();
-            return data;
-        }
-        else
-        {
-            BbsLog.LogError("Saved PlayerData Not Found! Returning NULL!!");
-            return null;
-        }
-
+        return LoadData<PlayerData>(GetFilePath("playerData.dat"));
     }
     #endregion
 
     #region META_DATA
     public static void SaveGameMetaData(GameMetaData data)
     {
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream stream = new FileStream(Application.persistentDataPath + gameMetaDatafileName, FileMode.Create);
-        bf.Serialize(stream, data);
-        stream.Close();
+        SaveData(data, GetFilePath("gameMetaData.dat"));
     }
 
     public static GameMetaData LoadGameMetaData()
     {
-        if (File.Exists(Application.persistentDataPath + gameMetaDatafileName))
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream stream = new FileStream(Application.persistentDataPath + gameMetaDatafileName, FileMode.Open);
-            GameMetaData data = bf.Deserialize(stream) as GameMetaData;
-            stream.Close();
-            return data;
-        }
-        else
-        {
-            Debug.LogError("Saved GameMetaData Not Found! Returning NULL!!");
-            return null;
-        }
-
+        return LoadData<GameMetaData>(GetFilePath("gameMetaData.dat"));
     }
     #endregion
 
     #region POWER_DATA
     public static void SavePowerData(PowerData data)
     {
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream stream = new FileStream(Application.persistentDataPath + powerDatafileName, FileMode.Create);
-        bf.Serialize(stream, data);
-        stream.Close();
+        SaveData(data, GetFilePath("powerData.dat"));
     }
 
     public static PowerData LoadPowerData()
     {
-        if (File.Exists(Application.persistentDataPath + powerDatafileName))
+        return LoadData<PowerData>(GetFilePath("powerData.dat")) ?? new PowerData();
+    }
+    #endregion
+
+    #region GENERIC SAVE/LOAD METHODS
+    private static void SaveData<T>(T data, string filePath)
+    {
+        try
         {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream stream = new FileStream(Application.persistentDataPath + powerDatafileName, FileMode.Open);
-            PowerData data = bf.Deserialize(stream) as PowerData;
-            stream.Close();
-            return data;
+            using (FileStream stream = new FileStream(filePath, FileMode.Create))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                bf.Serialize(stream, data);
+            }
+            Debug.Log($"Data saved successfully at {filePath}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to save data to {filePath}: {e.Message}");
+        }
+    }
+
+    private static T LoadData<T>(string filePath) where T : class
+    {
+        if (File.Exists(filePath))
+        {
+            try
+            {
+                using (FileStream stream = new FileStream(filePath, FileMode.Open))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    return bf.Deserialize(stream) as T;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Failed to load data from {filePath}: {e.Message}");
+            }
         }
         else
         {
-            Debug.LogError("Saved PowerData Not Found! Returning new PowerData.");
-            return new PowerData();
+            Debug.LogWarning($"Save file not found at {filePath}");
         }
+        return null;
     }
     #endregion
 }

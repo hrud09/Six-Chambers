@@ -23,7 +23,7 @@ public enum GameState
 public class GameplayManager : MonoBehaviour
 {
     private static GameplayManager Instance;
-    public static GameState currentRoundState;
+    public GameState currentRoundState;
     private bool isPaused = false;
     public RoundManager roundManager;
     public PowerManager powerManager;
@@ -70,39 +70,16 @@ public class GameplayManager : MonoBehaviour
 
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            TogglePause();
-        }
-    }
-
-    void TogglePause()
-    {
-        isPaused = !isPaused;
-
-        if (isPaused)
-        {
-            Time.timeScale = 0;
-        }
-        else
-        {
-            Time.timeScale = 1;
-        }
-    }
-
-    public void ReloadGameScene()
-    {
-        Time.timeScale = 1;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
 
     public void RestartGame()
     {
         roundManager.ResetProgress();
-        PlayerPrefs.DeleteAll();
+        ClearData.DeleteFiles();
+        foreach (Power item in powerManager.purchasedPowers)
+        {
+            item.InitiatePower();
+        }
+        // PlayerEconomyManager.Instance.UpdateCredit();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -19,81 +19,31 @@ public enum PowerType
 
 public class PowerManager : MonoBehaviour
 {
-
     public List<Power> purchasedPowers = new List<Power>();
     public Power choosenPowerToGamble;
     public Power activePower;
 
     public PokerEvaluator pokerEvaluator;
 
-   
-
-    public void UsePower(PowerType powerType, int chamberIndex = -1)
+    // Method to hide all power buttons except the selected one
+    public void HideOtherPowers(Power selectedPower)
     {
-        Debug.Log($"Attempting to use power: {powerType}");
-
-        switch (powerType)
+        foreach (Power power in purchasedPowers)
         {
-            case PowerType.Ghost:
-                ApplyGhost(chamberIndex);
-                break;
-            case PowerType.Portal_Gun:
-                ApplyPortalGun(chamberIndex);
-                break;
-            case PowerType.Money_Printer:
-            case PowerType.Investigate:
-                ApplyMoneyPrinter(chamberIndex);
-                break;
-            case PowerType.Crystal_Ball:
-                ApplyCrystalBall();
-                break;
-            case PowerType.Confetti_Blaster:
-                ApplyConfettiBlaster(chamberIndex);
-                break;
-            case PowerType.Joker:
-                ApplyJoker();
-                break;
-            default:
-                Debug.LogError($"Unknown power type: {powerType}");
-                break;
+            if (power != selectedPower)
+            {
+                power.gameObject.SetActive(false);
+            }
         }
     }
 
-    private void ApplyGhost(int chamberIndex)
+    // Method to unhide all power buttons
+    public void UnhideAllPowers()
     {
-        Debug.Log($"Applying Ghost power to chamber {chamberIndex}. This chamber cannot win.");
-        // pokerEvaluator.DisableWinningForChamber(chamberIndex);
-    }
-
-    private void ApplyPortalGun(int chamberIndex)
-    {
-        Debug.Log($"Applying Portal Gun to chamber {chamberIndex}. Collecting 2x gold, receiving 2x damage if lost.");
-        // pokerEvaluator.DoubleGoldForChamber(chamberIndex);
-        // pokerEvaluator.DoubleDamageForLoss(chamberIndex);
-    }
-
-    private void ApplyMoneyPrinter(int chamberIndex)
-    {
-        Debug.Log($"Applying Money Printer/Investigate to chamber {chamberIndex}. Revealing all cards.");
-        // pokerEvaluator.RevealCardsInChamber(chamberIndex);
-    }
-
-    private void ApplyCrystalBall()
-    {
-        Debug.Log("Applying Crystal Ball. Adding an extra (4th) card to the flop.");
-        // pokerEvaluator.AddExtraFlopCard();
-    }
-
-    private void ApplyConfettiBlaster(int chamberIndex)
-    {
-        Debug.Log($"Applying Confetti Blaster to chamber {chamberIndex}. Turning face-up cards into a wild suit.");
-        // pokerEvaluator.ConvertFaceUpCardsToWild(chamberIndex);
-    }
-
-    private void ApplyJoker()
-    {
-        Debug.Log("Applying Joker. Replacing a card in the flop with a wild card.");
-        // pokerEvaluator.ReplaceFlopCardWithWild();
+        foreach (Power power in purchasedPowers)
+        {
+            power.gameObject.SetActive(true);
+        }
     }
 }
 

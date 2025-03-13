@@ -135,7 +135,6 @@ public class CardManager : MonoBehaviour
     {
         for (int i = 0; i < boardCardParents.Length - 2; i++)
         {
-            print("Drawing Cards");
             CardInfo cardInfo = DrawRandomCard();
             Card card = Instantiate(cardPrefab, cardSpawnPos.position, Quaternion.Euler(0, 0, 0), boardCardParents[i]).GetComponent<Card>();
             card.InitiateCard(cardInfo, i < 3);
@@ -166,13 +165,14 @@ public class CardManager : MonoBehaviour
             {
                 pokerEvaluator.CallForRevealAction();
             }
-            else if(GameplayManager.GetInstance().powerManager.activePower == null)
+           
+            else if(GameplayManager.GetInstance().powerManager.activePower != null && GameplayManager.GetInstance().powerManager.activePower.powerInfo.powerType == PowerType.Crystal_Ball)
             {
-                GameplayManager.GetInstance().SetGameState(GameState.DealingBoardCards2);
+                GameplayManager.GetInstance().SetGameState(GameState.PlayersTurn);
             }
             else
             {
-                GameplayManager.GetInstance().SetGameState(GameState.PlayersTurn);
+                GameplayManager.GetInstance().SetGameState(GameState.DealingBoardCards2);
             }
         });
     }

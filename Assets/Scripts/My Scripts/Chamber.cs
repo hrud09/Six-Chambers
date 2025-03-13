@@ -16,6 +16,7 @@ public class Chamber : MonoBehaviour
 
     public bool handRevealed;
     public bool cantWin;
+    public GameObject cantWinTextObj;
     // Cards
     [Header("Cards")]
     private bool cardLifted;
@@ -125,11 +126,17 @@ public class Chamber : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        if (GameplayManager.currentRoundState == GameState.PowerInUse)
+        if (cantWin)
+        {
+            ToastMessageManager.GetInstance().ShowToastMessage("Can't Select!!", 1);
+            return;
+        }
+        if (GameplayManager.GetInstance().GetCurrentGameState() == GameState.PowerInUse)
         {
             if(GameplayManager.GetInstance().powerManager.activePower.powerInfo.powerType == PowerType.Ghost)
             {
                 cantWin = true;
+                cantWinTextObj.SetActive(true);
                 GameplayManager.GetInstance().SetGameState(GameState.PlayersTurn);
             }
             else if(GameplayManager.GetInstance().powerManager.activePower.powerInfo.powerType == PowerType.Investigate)
@@ -141,7 +148,7 @@ public class Chamber : MonoBehaviour
             }
         }
 
-        else if (GameplayManager.currentRoundState == GameState.PlayersTurn)
+        else if (GameplayManager.GetInstance().GetCurrentGameState() == GameState.PlayersTurn)
         {
             chamberManager.playerHandManager.SelectPlayerChamber(this);
             chamberCards[0].playerSelectionAura.SetActive(true);
@@ -228,6 +235,7 @@ public class Chamber : MonoBehaviour
         chamberUI.rankText.enabled = false;
         chamberUI.rankUICanvasGroup.alpha = 0;
         cantWin = false;
+        cantWinTextObj.SetActive(false);
         for (int i = 0; i < chamberUI.topFiveCards.Length; i++)
         {
             chamberUI.topFiveCards[i].enabled = false;

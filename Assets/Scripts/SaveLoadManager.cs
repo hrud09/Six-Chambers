@@ -8,6 +8,7 @@ public static class SaveLoadManager
     private const string economyDatafileName = "/economy.dat";
     private const string playerDatafileName = "/playerData.dat";
     private const string gameMetaDatafileName = "/gameMetaData.dat";
+    private const string powerDatafileName = "/powerData.dat";
 
     #region PREFERENCE_DATA
     public static void SavePreference(PreferenceData data)
@@ -30,7 +31,7 @@ public static class SaveLoadManager
         }
         else
         {
-           
+            BbsLog.LogError("Saved PreferenceData Not Found! Returning NULL!!");
             return null;
         }
 
@@ -59,7 +60,7 @@ public static class SaveLoadManager
         }
         else
         {
-           
+            BbsLog.LogError("Saved EconomyData Not Found! Returning NULL!!");
             return null;
         }
 
@@ -87,7 +88,7 @@ public static class SaveLoadManager
         }
         else
         {
-           
+            BbsLog.LogError("Saved PlayerData Not Found! Returning NULL!!");
             return null;
         }
 
@@ -119,6 +120,33 @@ public static class SaveLoadManager
             return null;
         }
 
+    }
+    #endregion
+
+    #region POWER_DATA
+    public static void SavePowerData(PowerData data)
+    {
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream stream = new FileStream(Application.persistentDataPath + powerDatafileName, FileMode.Create);
+        bf.Serialize(stream, data);
+        stream.Close();
+    }
+
+    public static PowerData LoadPowerData()
+    {
+        if (File.Exists(Application.persistentDataPath + powerDatafileName))
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream stream = new FileStream(Application.persistentDataPath + powerDatafileName, FileMode.Open);
+            PowerData data = bf.Deserialize(stream) as PowerData;
+            stream.Close();
+            return data;
+        }
+        else
+        {
+            Debug.LogError("Saved PowerData Not Found! Returning new PowerData.");
+            return new PowerData();
+        }
     }
     #endregion
 }

@@ -65,7 +65,7 @@ public class ChamberManager : MonoBehaviour
         int totalChambers = chamberTransforms.Length;
         totalSelectionTime = Random.Range(3f, 4f);
         initialDelay = Random.Range(0.18f, 0.22f);
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         while (elapsedTime < totalSelectionTime)
         {
             rangerChosenChamber = chamberTransforms[currentIndex].GetComponent<Chamber>();

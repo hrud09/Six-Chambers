@@ -10,7 +10,7 @@ public class PlayerManager : MonoBehaviour
     public Chamber playerChosenChamber;
     public bool mouseOverChambers;
 
-    public SetAndRoundManager setAndRoundManager;
+    public RoundManager setAndRoundManager;
     public GameplayManager gameManager;
 
     [Header("Health Section")]
@@ -147,6 +147,14 @@ public class PlayerManager : MonoBehaviour
 
     private void HandlePlayerWin(List<GameObject> bulletsReceived, int damagePerBullet = 1)
     {
+        if(GameplayManager.GetInstance().powerManager.choosenPowerToGamble != null)
+        {
+            GameManager.GetInstance().UnlockPower(GameplayManager.GetInstance().powerManager.choosenPowerToGamble.powerInfo.powerType);
+            GameplayManager.GetInstance().powerManager.choosenPowerToGamble = null;
+
+        }
+        GameplayManager.GetInstance().powerManager.activePower = null;
+
         chamberManager.rangerManager.damageTakenText.enabled = true;
         chamberManager.rangerManager.damageTakenText.text = "-" + (damagePerBullet * bulletsReceived.Count).ToString();
         print(bulletsReceived.Count);
@@ -175,6 +183,9 @@ public class PlayerManager : MonoBehaviour
 
     private void HandlePlayerLose(List<GameObject> bulletsReceived, int damagePerBullet = 1)
     {
+        GameplayManager.GetInstance().powerManager.choosenPowerToGamble = null;
+        GameplayManager.GetInstance().powerManager.activePower = null;
+
         damageTakenText.enabled = true;
         damageTakenText.text = "-" + (damagePerBullet * bulletsReceived.Count).ToString();
         print(bulletsReceived.Count);

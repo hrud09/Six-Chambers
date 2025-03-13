@@ -15,11 +15,11 @@ public class WorldSpaceButton : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        transform.DOScale(1.1f, 0.2f);
+        transform.DOScale(1.4f, 0.2f);
     }
     private void OnMouseExit()
     {
-        transform.DOScale(1f, 0.2f);
+        transform.DOScale(1.3f, 0.2f);
     }
     // Start is called before the first frame update
     void Start()

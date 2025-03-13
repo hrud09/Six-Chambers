@@ -15,6 +15,7 @@ public class Chamber : MonoBehaviour
     private PokerEvaluator pokerEvaluator;
 
     public bool handRevealed;
+    public bool cantWin;
     // Cards
     [Header("Cards")]
     private bool cardLifted;
@@ -114,6 +115,7 @@ public class Chamber : MonoBehaviour
 
     private void OnMouseOver()
     {
+        
         if ((GameplayManager.GetInstance().GetCurrentGameState() == GameState.PlayersTurn) && !cardLifted && !handRevealed)
         {
              // playerSelectionAura.SetActive(true);
@@ -123,7 +125,23 @@ public class Chamber : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        if (GameplayManager.GetInstance().GetCurrentGameState() == GameState.PlayersTurn)
+        if (GameplayManager.currentRoundState == GameState.PowerInUse)
+        {
+            if(GameplayManager.GetInstance().powerManager.activePower.powerInfo.powerType == PowerType.Ghost)
+            {
+                cantWin = true;
+                GameplayManager.GetInstance().SetGameState(GameState.PlayersTurn);
+            }
+            else if(GameplayManager.GetInstance().powerManager.activePower.powerInfo.powerType == PowerType.Investigate)
+            {
+                handRevealed = true;
+                chamberCards[0].transform.DOLocalMoveZ(0.8f, 0.2f);
+                chamberCards[0].RevealCard();
+                GameplayManager.GetInstance().SetGameState(GameState.PlayersTurn);
+            }
+        }
+
+        else if (GameplayManager.currentRoundState == GameState.PlayersTurn)
         {
             chamberManager.playerHandManager.SelectPlayerChamber(this);
             chamberCards[0].playerSelectionAura.SetActive(true);
@@ -190,7 +208,6 @@ public class Chamber : MonoBehaviour
 
     public void PaintTopCards(List<Card> cards)
     {
-
         StartCoroutine(PaintTopCardsDelay(cards));
     }
 
@@ -210,7 +227,7 @@ public class Chamber : MonoBehaviour
         chamberUI.rankTextBG.color = pokerEvaluator.winLoseColors[1];
         chamberUI.rankText.enabled = false;
         chamberUI.rankUICanvasGroup.alpha = 0;
-
+        cantWin = false;
         for (int i = 0; i < chamberUI.topFiveCards.Length; i++)
         {
             chamberUI.topFiveCards[i].enabled = false;

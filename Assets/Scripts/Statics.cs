@@ -62,14 +62,14 @@ public enum FlyObjectType
     ExtraCardSlot = 6,
     Hammer = 10
 }
-/*
-public enum CardType
+
+/*public enum CardType
 {
     EMPTY = 0,
     NORMAL,
     ELEMENT
-}*/
-
+}
+*/
 public enum CardColorType
 {
     EMPTY = 0,

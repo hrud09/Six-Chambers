@@ -8,11 +8,11 @@ public class GameManager : MonoBehaviour
 
     private const int InitialCoinAmount = 0;
 
-   
     private PreferenceData preferenceData;
     private EconomyData economyData;
     private PlayerData playerData;
     private GameMetaData gameMetaData;
+    private PowerData powerData;
 
     public bool isDebug = true;
 
@@ -81,6 +81,14 @@ public class GameManager : MonoBehaviour
             gameMetaData = new GameMetaData();
             SaveLoadManager.SaveGameMetaData(gameMetaData);
         }
+
+        // Load Power Data
+        powerData = SaveLoadManager.LoadPowerData();
+        if (powerData == null)
+        {
+            powerData = new PowerData();
+            SaveLoadManager.SavePowerData(powerData);
+        }
     }
 
     #region Preference Data
@@ -104,7 +112,7 @@ public class GameManager : MonoBehaviour
 
         AudioManager.GetInstance().SetBGMPermissionValue(isBgmOn);
         AudioManager.GetInstance().SetSFXPermissionValue(isSfxOn);
-       
+        //VibrationManager.instance.SetVibration(isVibrationOn);
         AudioManager.GetInstance().Init();
     }
 
@@ -120,8 +128,8 @@ public class GameManager : MonoBehaviour
     public void AddCoins(int amount)
     {
         economyData.coinCount += amount;
-
         SaveLoadManager.SaveEconomyData(economyData);
+        PlayerEconomyManager.Instance.UpdateCreditUI(economyData.coinCount);
     }
 
     public EconomyData GetEconomyData()
@@ -160,5 +168,39 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Power Data
+
+    public PowerData GetPowerData()
+    {
+        return powerData;
+    }
+
+    public void UnlockPower(PowerType powerType)
+    {
+        powerData.SetPowerState(powerType, true);
+        SaveLoadManager.SavePowerData(powerData);
+
+        foreach (Power item in GameplayManager.GetInstance().powerManager.purchasedPowers)
+        {
+            if (item.powerInfo.powerType == powerType)
+            {
+                item.InitiatePower();
+            }
+        }
+       
+    }
+
+    public bool IsPowerUnlocked(PowerType powerType)
+    {
+        return powerData.GetPowerState(powerType);
+    }
+
+    public void UpdatePowerData(PowerData pData)
+    {
+        powerData = pData;
+        SaveLoadManager.SavePowerData(powerData);
+    }
+
+    #endregion
    
 }

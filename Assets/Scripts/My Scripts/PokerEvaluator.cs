@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -266,6 +266,10 @@ public class PokerEvaluator : MonoBehaviour
 
         foreach (var chamber in chamberManager.chambers)
         {
+            if (chamber.cantWin)
+            {
+                continue;
+            }
             var chamberCardsInRiver = new List<Card>(cardsOnBoard);
             chamberCardsInRiver.AddRange(chamber.chamberCards);
 

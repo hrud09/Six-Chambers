@@ -2,87 +2,165 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using DG.Tweening;
 
 public class TutorialManager : MonoBehaviour
 {
     public static TutorialManager Instance;
-    public Tutorial[] tutorialObjects;
-    public GameObject tutorialObject;
-    public TMP_Text tutorialText;
-    public float typingSpeed = 0.05f; // Speed of the typing effect (in seconds per character)
 
+    [SerializeField] private List<TutorialInfo> allTutorials = new List<TutorialInfo>();
+    [SerializeField] private GameObject tutorialObject;
+    [SerializeField] private TMP_Text tutorialText;
+    [SerializeField] private float typingSpeed = 0.05f;
+
+    private const string tutorialString = "isTutorialFinished";
+    private const string tutorialID = "TUTORIAL_ID_";
+
+    private int currentTutorialId = 0;
+    private bool isTutorialFinished = false;
     private Coroutine typingCoroutine;
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+
+        isTutorialFinished = PlayerPrefs.GetInt(tutorialString, 0) == 1;
     }
 
-    public Tutorial GetTutorial(TutorialType _tutorialType)
+    private IEnumerator Start()
     {
-        foreach (Tutorial tutorial in tutorialObjects)
+        yield return null;
+        StartTutorial();
+    }
+
+    public int CurrentTutorialID
+    {
+        get => PlayerPrefs.GetInt(tutorialID, 1);
+        set => PlayerPrefs.SetInt(tutorialID, value);
+    }
+
+    public void StartTutorial(bool applyDelay = false, float delay = 0f)
+    {
+        if (CurrentTutorialID - 1 >= allTutorials.Count || isTutorialFinished)
+            return;
+
+        if (applyDelay)
         {
-            if (tutorial.tutorialType == _tutorialType)
+            DOVirtual.DelayedCall(delay, () => allTutorials[CurrentTutorialID - 1].OnTutorialStart());
+        }
+        else
+        {
+            allTutorials[CurrentTutorialID - 1].OnTutorialStart();
+        }
+    }
+
+    public void StartTutorial(int id)
+    {
+        if (id - 1 < allTutorials.Count)
+            allTutorials[id - 1].OnTutorialStart();
+    }
+
+    public void EndTutorial(int id, bool applyDelay = false)
+    {
+        if (id - 1 < allTutorials.Count)
+        {
+            allTutorials[id - 1].OnTutorialEnd();
+
+            if (applyDelay)
             {
-                return tutorial;
+                DOVirtual.DelayedCall(1.25f, () => EndTutorialBehavior(id));
+            }
+            else
+            {
+                EndTutorialBehavior(id);
             }
         }
-        return null;
     }
 
-    public void ShowTutorial(TutorialType _tutorialType)
+    private void EndTutorialBehavior(int id)
     {
-        Tutorial tutorial = GetTutorial(_tutorialType);
-        if (tutorial == null) return;
+        CurrentTutorialID++;
 
-        // Stop any existing typing coroutine
-        if (typingCoroutine != null)
+        if (CurrentTutorialID - 1 >= allTutorials.Count)
         {
-            StopCoroutine(typingCoroutine);
+            PlayerPrefs.SetInt(tutorialString, 1);
+            isTutorialFinished = true;
+            return;
         }
 
-        // Set the tutorial message and activate the object
+        if ((CurrentTutorialID == 3 && GameManager.GetInstance().GetPlayerData().currentLevelId != 3) ||
+            (CurrentTutorialID == 4 && GameManager.GetInstance().GetPlayerData().currentLevelId != 6) ||
+            (CurrentTutorialID == 5 && GameManager.GetInstance().GetPlayerData().currentLevelId != 10))
+        {
+            return;
+        }
+
+        StartTutorial();
+    }
+
+    public bool IsTutorialFinished() => isTutorialFinished;
+    public bool IsTutorialEnded(int id) => CurrentTutorialID > id;
+
+    public void ShowTutorial(TutorialType tutorialType)
+    {
+        TutorialInfo tutorial = GetTutorial(tutorialType);
+        if (tutorial == null) return;
+
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
         tutorialObject.SetActive(true);
         typingCoroutine = StartCoroutine(TypeText(tutorial.tutorialMessage));
     }
 
-    public void HideTutorial(TutorialType _tutorialType)
+    public void HideTutorial()
     {
-        Tutorial tutorial = GetTutorial(_tutorialType);
-        if (tutorial == null) return;
-
-        // Stop the typing coroutine if it's running
         if (typingCoroutine != null)
-        {
             StopCoroutine(typingCoroutine);
-        }
 
-        // Clear the text and hide the tutorial object
         tutorialText.text = "";
         tutorialObject.SetActive(false);
     }
 
     private IEnumerator TypeText(string message)
     {
-        tutorialText.text = ""; // Clear the text initially
+        tutorialText.text = "";
         foreach (char letter in message.ToCharArray())
         {
-            tutorialText.text += letter; // Add one letter at a time
-            yield return new WaitForSeconds(typingSpeed); // Wait before adding the next letter
+            tutorialText.text += letter;
+            yield return new WaitForSeconds(typingSpeed);
         }
     }
+
+    private TutorialInfo GetTutorial(TutorialType tutorialType)
+    {
+        return allTutorials.Find(tutorial => tutorial.tutorialType == tutorialType);
+    }
 }
+
 [System.Serializable]
-public class Tutorial {
-
+public class TutorialInfo
+{
     public TutorialType tutorialType;
-
     public string tutorialMessage;
 
+    public void OnTutorialStart()
+    {
+        TutorialManager.Instance.ShowTutorial(tutorialType);
+    }
+
+    public void OnTutorialEnd()
+    {
+        TutorialManager.Instance.HideTutorial();
+    }
 }
 
-public enum TutorialType { 
-
+public enum TutorialType
+{
     None,
     DealCardsToChamber,
     DealCardsOnTable,

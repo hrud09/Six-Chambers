@@ -17,16 +17,17 @@ public enum GameState
     Dueling,
     CollectingAllCards,
     RoundEnded,
-    NoInputState
+    NoInputState,
+    PowerInUse
 }
 public class GameplayManager : MonoBehaviour
 {
     private static GameplayManager Instance;
-    public GameState currentRoundState;
+    public static GameState currentRoundState;
     private bool isPaused = false;
-    public SetAndRoundManager setAndRoundManager;
-
-
+    public RoundManager roundManager;
+    public PowerManager powerManager;
+    public CardManager cardManager;
     private void Awake()
     {
         if (Instance == null)
@@ -37,6 +38,11 @@ public class GameplayManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
+    }
+    private void OnEnable()
+    {
+        roundManager = FindObjectOfType<RoundManager>();
+        powerManager = FindObjectOfType<PowerManager>();
     }
     public static GameplayManager GetInstance()
     {
@@ -60,7 +66,7 @@ public class GameplayManager : MonoBehaviour
    
     public void OnRoundEnd()
     {
-       setAndRoundManager.EndRound();
+       roundManager.EndRound();
 
     }
 
@@ -95,7 +101,7 @@ public class GameplayManager : MonoBehaviour
 
     public void RestartGame()
     {
-        setAndRoundManager.ResetAll();
+        roundManager.ResetProgress();
         PlayerPrefs.DeleteAll();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }

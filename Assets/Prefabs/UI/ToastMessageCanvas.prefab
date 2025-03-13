@@ -221,7 +221,7 @@ GameObject:
   - component: {fileID: 9154946454774963867}
   - component: {fileID: 6268152331089091762}
   - component: {fileID: 5801572977776976965}
-  - component: {fileID: 7512412258375836181}
+  - component: {fileID: 6790813847840525429}
   m_Layer: 5
   m_Name: ToastMessageCanvas
   m_TagString: Untagged
@@ -312,7 +312,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &7512412258375836181
+--- !u!114 &6790813847840525429
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -321,7 +321,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3946660805267213694}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 624b2e11769a14ccba17c68ddebf3326, type: 3}
+  m_Script: {fileID: 11500000, guid: aa4f5e4778574456abcff2e401e7ea53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   holderRect: {fileID: 754111379048919187}

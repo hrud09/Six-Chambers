@@ -129,7 +129,7 @@ public class GameManager : MonoBehaviour
     {
         economyData.coinCount += amount;
         SaveLoadManager.SaveEconomyData(economyData);
-        PlayerEconomyManager.Instance.UpdateCreditUI(economyData.coinCount);
+        GameplayManager.GetInstance().GetPlayerEconomy().UpdateCreditUI(economyData.coinCount);
     }
 
     public EconomyData GetEconomyData()

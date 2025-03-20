@@ -28,16 +28,24 @@ public class GameplayManager : MonoBehaviour
     public RoundManager roundManager;
     public PowerManager powerManager;
     public CardManager cardManager;
+    PlayerEconomyManager playerEconomyManager;
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            playerEconomyManager = FindObjectOfType<PlayerEconomyManager>();
         }
         else
         {
             Destroy(this.gameObject);
         }
+    }
+
+    public PlayerEconomyManager GetPlayerEconomy()
+    {
+        if(playerEconomyManager == null) playerEconomyManager = FindObjectOfType<PlayerEconomyManager>();
+        return playerEconomyManager;
     }
     private void OnEnable()
     {
@@ -73,8 +81,9 @@ public class GameplayManager : MonoBehaviour
 
     public void RestartGame()
     {
-        roundManager.ResetProgress();
         ClearData.DeleteFiles();
+        roundManager.ResetProgress();
+        playerEconomyManager.ResetEconomy();
         foreach (Power item in powerManager.purchasedPowers)
         {
             item.InitiatePower();

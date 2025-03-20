@@ -79,7 +79,7 @@ public class PowerData
             powerValues.Add(state);
         }
     }
-
+    
     public bool GetPowerState(PowerType type)
     {
         int index = powerTypes.IndexOf(type);

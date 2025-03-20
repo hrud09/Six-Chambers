@@ -28,6 +28,17 @@ public class PlayerInputManager : MonoBehaviour
         {
             ExecuteMouseDownAction();
         }
+
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            PowerData powerData = GameManager.GetInstance().GetPowerData();
+            powerData.SetPowerState(PowerType.Ghost, true);
+            powerData.SetPowerState(PowerType.Investigate, true);
+            powerData.SetPowerState(PowerType.Crystal_Ball, true);
+            SaveLoadManager.SavePowerData(powerData);
+        }
+
     }
 
     private void ExecuteMouseDownAction()

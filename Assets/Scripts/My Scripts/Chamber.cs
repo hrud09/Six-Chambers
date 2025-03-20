@@ -141,7 +141,7 @@ public class Chamber : MonoBehaviour
             }
             else if(GameplayManager.GetInstance().powerManager.activePower.powerInfo.powerType == PowerType.Investigate)
             {
-                handRevealed = true;
+               // handRevealed = true;
                 chamberCards[0].transform.DOLocalMoveZ(0.8f, 0.2f);
                 chamberCards[0].RevealCard();
                 GameplayManager.GetInstance().SetGameState(GameState.PlayersTurn);

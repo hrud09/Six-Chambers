@@ -81,7 +81,7 @@ public class Power : MonoBehaviour
                 if (economyData.coinCount >= powerInfo.powerCost)
                 {
                     powerManager.HideOtherPowers(this);
-                    PlayerEconomyManager.Instance.UpdateCredit(-powerInfo.powerCost);
+                    GameplayManager.GetInstance().GetPlayerEconomy().UpdateCredit(-powerInfo.powerCost);
                     powerManager.choosenPowerToGamble = this;
 
                 }

@@ -5,18 +5,12 @@ using UnityEngine.Events;
 
 public class PlayerEconomyManager : MonoBehaviour
 {
-    public static PlayerEconomyManager Instance;
+   // public static PlayerEconomyManager Instance;
     public TMP_Text currentCreditText;
     public float incrementSpeed = 0.01f; // Time between increments
     public UnityEvent onCreditValueChange;
 
     private EconomyData economyData;
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
 
     void Start()
     {
@@ -28,7 +22,7 @@ public class PlayerEconomyManager : MonoBehaviour
         economyData = GameManager.GetInstance().GetEconomyData();
         if (economyData == null)
         {
-            economyData = new EconomyData(100); // Default starting credit
+            economyData = new EconomyData(0); // Default starting credit
             SaveLoadManager.SaveEconomyData(economyData);
         }
         UpdateCreditUI(economyData.coinCount);
@@ -67,5 +61,13 @@ public class PlayerEconomyManager : MonoBehaviour
         else if (value >= 1_000_000) return (value / 1_000_000f).ToString("0.##") + "m";
         else if (value >= 1_000) return (value / 1_000f).ToString("0.##") + "k";
         else return value.ToString();
+    }
+
+    public void ResetEconomy()
+    {
+        economyData = GameManager.GetInstance().GetEconomyData();
+        economyData.coinCount = 0;
+        SaveLoadManager.SaveEconomyData(economyData);
+        UpdateCreditUI(economyData.coinCount);
     }
 }

@@ -25,6 +25,12 @@ public class PowerManager : MonoBehaviour
 
     public PokerEvaluator pokerEvaluator;
 
+    public Transform unlockedPowersParent;
+    public Transform shopPowersParent;
+
+    public List<Power> lockedPowers = new List<Power>();
+
+
     // Method to hide all power buttons except the selected one
     public void HideOtherPowers(Power selectedPower)
     {
@@ -45,6 +51,17 @@ public class PowerManager : MonoBehaviour
             power.gameObject.SetActive(true);
         }
     }
+    public void RefreshPowerLists()
+    {
+        lockedPowers.Clear();
+        purchasedPowers.Clear();
+
+        foreach (Power power in GetComponentsInChildren<Power>(true))
+        {
+            power.InitiatePower();
+        }
+    }
+
 }
 
 [System.Serializable]

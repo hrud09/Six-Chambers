@@ -21,23 +21,36 @@ public class Power : MonoBehaviour
         PowerData powerData = GameManager.GetInstance().GetPowerData();
         if (powerData != null)
         {
-            if (powerData.GetPowerState(powerInfo.powerType))
+            if (powerData.GetPowerState(powerInfo.powerType)) // Power is unlocked
             {
                 lockedOverlay.enabled = false;
                 UpdateUI();
                 powerUseButton.onClick.RemoveAllListeners();
                 powerUseButton.onClick.AddListener(ActivatePowerToUse);
+
+                // Move to unlocked parent if not already
+                if (transform.parent != powerManager.unlockedPowersParent)
+                {
+                    transform.SetParent(powerManager.unlockedPowersParent);
+                    powerManager.purchasedPowers.Add(this);
+                    powerManager.lockedPowers.Remove(this);
+                }
             }
-            else
+            else // Power is still locked
             {
                 lockedOverlay.enabled = true;
                 UpdateUI();
-
                 powerUseButton.onClick.RemoveAllListeners();
                 powerUseButton.onClick.AddListener(GamblePowerToActivate);
 
-
-
+                // Make sure it's in the locked group
+                if (transform.parent != powerManager.shopPowersParent)
+                {
+                    transform.SetParent(powerManager.shopPowersParent);
+                    if (!powerManager.lockedPowers.Contains(this))
+                        powerManager.lockedPowers.Add(this);
+                    powerManager.purchasedPowers.Remove(this);
+                }
             }
         }
     }
@@ -77,20 +90,24 @@ public class Power : MonoBehaviour
             EconomyData economyData = GameManager.GetInstance().GetEconomyData();
             if (economyData != null)
             {
-
                 if (economyData.coinCount >= powerInfo.powerCost)
                 {
-                    powerManager.HideOtherPowers(this);
+                    // Hide only locked powers
+                    foreach (Power power in powerManager.lockedPowers)
+                    {
+                        if (power != this)
+                            power.gameObject.SetActive(false);
+                    }
+
                     GameplayManager.GetInstance().GetPlayerEconomy().UpdateCredit(-powerInfo.powerCost);
                     powerManager.choosenPowerToGamble = this;
-
                 }
                 else
                 {
                     ToastMessageManager.GetInstance().ShowToastMessage("Not Enough Coins!!", 1);
-
                 }
             }
         }
     }
+
 }
